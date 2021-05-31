@@ -301,7 +301,7 @@ namespace bingrep
 
         private static void ShowHelp(OptionSet optionSet)
         {
-            string name = GhostYak.Version.AssemblyTitle;
+            string name = bingrep.Version.AssemblyTitle + ".exe";
             Console.WriteLine("");
             Console.WriteLine($"{name} <파일경로> [옵션]");
             Console.WriteLine("");
@@ -312,18 +312,18 @@ namespace bingrep
             Console.WriteLine("정규표현식:");
             Console.WriteLine("");
             Console.WriteLine("  이 프로그램의 정규표현식은 C# 언어 및 Re2 정규표현식 라이브러리의 문법을 따릅니다.");
-            Console.WriteLine("  예시) -regex=\"\\x00\\x00\\x00\\x01\\x67\"");
+            Console.WriteLine("  예시) -regex='\\x00\\x00\\x00\\x01\\x67'");
 
             Console.WriteLine("");
             Console.WriteLine("Example 01 파일 내용을 HEX값으로 출력 : ");
             Console.WriteLine("");
-            Console.WriteLine($"\t{name} \"C:\\path_to_file.txt\"");
-            Console.WriteLine($"\t{name} \"C:\\path_to_file.txt\" -p=10    (10줄만 출력)");
+            Console.WriteLine($"\t{name} 'C:\\path_to_file.txt'");
+            Console.WriteLine($"\t{name} 'C:\\path_to_file.txt' -n=10 -w=32");
 
             Console.WriteLine("");
             Console.WriteLine("Example 02 파일 내용을 정규표현식으로 검색 : ");
             Console.WriteLine("");
-            Console.WriteLine($"\t{name} \"C:\\path_to_file.txt\" -e=\"\\x00\\x00\\x00\\x01\\x67\" -w=100");
+            Console.WriteLine($"\t{name} 'C:\\path_to_file.txt' -e='.{{60}}\\x00\\x00\\x00\\x01\\x67' -n=10 -w=65");
             Console.WriteLine("");
 
             Console.WriteLine("");
@@ -337,7 +337,7 @@ namespace bingrep
             Console.WriteLine("");
             Console.WriteLine("Example 04 디스크 내용을 정규표현식으로 검색 : ");
             Console.WriteLine("");
-            Console.WriteLine($"\t{name} \"\\\\.\\PHYSICALDRIVE0\" -e=\"\\x00\\x00\\x00\\x01\\x67\" -w=100");
+            Console.WriteLine($"\t{name} \"\\\\.\\PHYSICALDRIVE0\" -e='.{{60}}\\x00\\x00\\x00\\x01\\x67' -w=65");
             Console.WriteLine("");
         }
 
