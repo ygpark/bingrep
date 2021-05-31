@@ -345,9 +345,9 @@ namespace bingrep
 
         private static void ShowVersion()
         {
-            string name = GhostYak.Version.AssemblyTitle;
-            string version = GhostYak.Version.AssemblyVersionBig2;
-            string buildDate = GhostYak.Version.AssemblyBuildDate;
+            string name = bingrep.Version.AssemblyTitle;
+            string version = bingrep.Version.AssemblyVersionBig2;
+            string buildDate = bingrep.Version.AssemblyBuildDate;
 
             Console.WriteLine($"{name} v{version} (BUILD {buildDate})");
         }
