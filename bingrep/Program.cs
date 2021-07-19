@@ -208,23 +208,30 @@ namespace bingrep
             int numberOfRead;
             int nHexOffsetLength = string.Format("{0:X}", stream.Length).Length;
             int line = 0;
-            long pos = stream.Position;
             long lastHitPos = 0;
-            long newHitPos = 0;
+            long newHitPos;
             long startOffsetToRead = stream.Position;
             const long BUFFER_PADDING = 200;
             string sHexOffsetLength = nHexOffsetLength.ToString();
+            bool isOverflow = false;
 
             while ((numberOfRead = stream.Read(buffer, 0, BUFFER_SIZE)) != 0)
             {
                 Re2.Net.MatchCollection matches = BinaryRegex.Matches(buffer, expression);
                 foreach (Re2.Net.Match match in matches)
                 {
-                    line++;
-
                     newHitPos = startOffsetToRead + match.Index;
-                    if (newHitPos <= lastHitPos)
+                    if (newHitPos < lastHitPos)
+                    {
                         continue;
+                    } else if (newHitPos == lastHitPos && isOverflow == false)
+                    {
+                        continue;
+                    }
+                    else if (newHitPos == lastHitPos && isOverflow == true)
+                    {
+                        isOverflow = false;
+                    }
 
                     //
                     // 정규식은 hit했는데, 출력할 영역이 buffer overflow 발생할 경우 hit 지점부터 다시 Read한다.
@@ -234,11 +241,15 @@ namespace bingrep
                     {
                         lastHitPos = startOffsetToRead + match.Index;
                         stream.Position = lastHitPos;
+                        startOffsetToRead = stream.Position;
+                        isOverflow = true;
                         break;
                     }
 
                     string value = BitConverter.ToString(buffer, match.Index, width).Replace("-", separator);
                     long displayOffset = startOffsetToRead + match.Index;
+
+                    line++;
 
                     if (_isShowOffset == true)
                         Console.WriteLine(string.Format("{0:X" + sHexOffsetLength + "}h : {1}", displayOffset, value));
@@ -248,8 +259,9 @@ namespace bingrep
                     lastHitPos = startOffsetToRead + match.Index;
                 }
 
+
                 isNotEndOfStream = (numberOfRead == BUFFER_SIZE);
-                if (isNotEndOfStream)
+                if (isNotEndOfStream && !isOverflow)
                 {
                     /*
                      * BUFFER_PADDING
@@ -263,11 +275,12 @@ namespace bingrep
 
                 // 종료 조건
                 if (limit != 0 && limit <= line)
+                {
                     break;
+                }
 
                 //상태 저장
                 startOffsetToRead = stream.Position;
-                pos += width;
             }
         }
 
