@@ -43,9 +43,9 @@ namespace bingrep
                 .Add("v|version", "시작 위치 변경", v => _version++)
                 .Add("hideoffset", "Offset 출력 안함", v => _isShowOffset = false)
                 .Add("e=|regex=", "정규표현식 (예시:  -e=\"\\x00\\x00\\x00\\x01\\x67\")", v => _expression = v)
-                .Add("w=|width=", "한줄에 표시할 바이트 문자열 개수 (미구현)", v => _lineWidth = int.Parse(v))
-                .Add("n=|line=", "출력할 라인 수 (기본값: 0(무제한))", v => _limit = int.Parse(v))
-                .Add("s=|position=", "시작 위치 (단위: byte)", v => _pos = int.Parse(v))
+                .Add("w=|width=", "한줄에 표시할 바이트 문자열 개수", v => _lineWidth = int.Parse(v))
+                .Add("n=|line=", "출력할 라인 수 [기본값: 0(무제한)]", v => _limit = int.Parse(v))
+                .Add("s=|position=", "시작 위치 (단위: byte)", v => _pos = long.Parse(v))
                 .Add("t=|separator=", "바이트 문자열 분리 기호", v => _separator = v)
                 ;
 
