@@ -88,8 +88,8 @@ namespace bingrep
                 return;
             }
 
-            if (_lineWidth <= 0 || 8192 < _lineWidth) {
-                Console.WriteLine("-width 옵션값이 범위를 벗어났습니다. 1부터 1024 사이의 값을 입력해 주세요.");
+            if (_lineWidth <= 0 || 102400 < _lineWidth) {
+                Console.WriteLine("-width 옵션값이 범위를 벗어났습니다. 1부터 409600 사이의 값을 입력해 주세요.");
                 return;
             }
 
@@ -203,7 +203,7 @@ namespace bingrep
         private static void PrintStreamByRegex(Stream stream, int width, int limit, string separator, string expression)
         {
             bool isNotEndOfStream;
-            byte[] buffer = new byte[4 * 1024];
+            byte[] buffer = new byte[100 * 1024];
             int BUFFER_SIZE = buffer.Length;
             int numberOfRead;
             int nHexOffsetLength = string.Format("{0:X}", stream.Length).Length;
@@ -215,6 +215,8 @@ namespace bingrep
             string sHexOffsetLength = nHexOffsetLength.ToString();
             bool isOverflow = false;
 
+            expression = ChangeDotToByteExpression(expression);
+
             while ((numberOfRead = stream.Read(buffer, 0, BUFFER_SIZE)) != 0)
             {
                 Re2.Net.MatchCollection matches = BinaryRegex.Matches(buffer, expression);
@@ -224,7 +226,8 @@ namespace bingrep
                     if (newHitPos < lastHitPos)
                     {
                         continue;
-                    } else if (newHitPos == lastHitPos && isOverflow == false)
+                    }
+                    else if (newHitPos == lastHitPos && isOverflow == false)
                     {
                         continue;
                     }
@@ -336,7 +339,8 @@ namespace bingrep
             Console.WriteLine("");
             Console.WriteLine("Example 02 파일 내용을 정규표현식으로 검색 : ");
             Console.WriteLine("");
-            Console.WriteLine($"\t{name} 'C:\\path_to_file.txt' -e='.{{60}}\\x00\\x00\\x00\\x01\\x67' -n=10 -w=65");
+            Console.WriteLine($"\t{name} 'C:\\path_to_file.txt' -e=\"[\\x00-\\xFF]{{60}}\\x00\\x00\\x00\\x01\\x67\" -n=10 -w=65");
+            Console.WriteLine($"\t{name} 'C:\\path_to_file.txt' -e=\".{{60}}\\x00\\x00\\x00\\x01\\x67\" -n=10 -w=65");
             Console.WriteLine("");
 
             Console.WriteLine("");
@@ -350,7 +354,8 @@ namespace bingrep
             Console.WriteLine("");
             Console.WriteLine("Example 04 디스크 내용을 정규표현식으로 검색 : ");
             Console.WriteLine("");
-            Console.WriteLine($"\t{name} \"\\\\.\\PHYSICALDRIVE0\" -e='.{{60}}\\x00\\x00\\x00\\x01\\x67' -w=65");
+            Console.WriteLine($"\t{name} \"\\\\.\\PHYSICALDRIVE0\" -e=\"[\\x00-\\xFF]{{60}}\\x00\\x00\\x00\\x01\\x67\" -w=65");
+            Console.WriteLine($"\t{name} \"\\\\.\\PHYSICALDRIVE0\" -e=\".{{60}}\\x00\\x00\\x00\\x01\\x67\" -w=65");
             Console.WriteLine("");
         }
 
@@ -378,5 +383,42 @@ namespace bingrep
             return false;
         }
 
+        private static string ChangeDotToByteExpression(string expression)
+        {
+            bool isWorking = true;
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < expression.Length; i++)
+            {
+                if (expression[i] == '[')
+                {
+                    isWorking = false;
+                }
+                if (expression[i] == ']')
+                {
+                    isWorking = true;
+                }
+
+                if (isWorking)
+                {
+                    if (0 == i && expression[i] == '.')
+                    {
+                        sb.Append("[\\x00-\\xFF]");
+                    }
+                    else if (1 < i && expression[i - 1] != '\\' && expression[i] == '.')
+                    {
+                        sb.Append("[\\x00-\\xFF]");
+                    }
+                    else
+                    {
+                        sb.Append(expression[i]);
+                    }
+                }
+                else
+                {
+                    sb.Append(expression[i]);
+                }
+            }
+            return sb.ToString();
+        }
     }
 }
