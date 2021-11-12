@@ -1,0 +1,29 @@
+= bingrep 사용자 매뉴얼
+박영기
+v1.3, 2021-11-12
+:doctype: book
+:docinfo:
+:toc:
+:toclevels: 2
+:pagenums:
+:front-cover-image: image:images/cover.png[pdfwidth=1050,height=1600]
+:icons: font
+:source-highlighter: coderay
+:toc-title: 차례
+
+include::book/introduction.adoc[프로그램 소개]
+
+include::ch01-manual.adoc[매뉴얼]
+
+
+<<<
+
+include::book/changelog.adoc[Change Log]
+
+<<<
+
+<<<
+
+　
+
+<<<

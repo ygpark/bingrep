@@ -1,0 +1,4 @@
+powershell "(New-Object System.Net.WebClient).DownloadFile('https://github.com/chloerei/asciidoctor-pdf-cjk-kai_gen_gothic/releases/download/v0.1.0-fonts/KaiGenGothicKR-Bold-Italic.ttf','.\fonts\KaiGenGothicKR-Bold-Italic.ttf')"
+powershell "(New-Object System.Net.WebClient).DownloadFile('https://github.com/chloerei/asciidoctor-pdf-cjk-kai_gen_gothic/releases/download/v0.1.0-fonts/KaiGenGothicKR-Bold.ttf','.\fonts\KaiGenGothicKR-Bold.ttf')"
+powershell "(New-Object System.Net.WebClient).DownloadFile('https://github.com/chloerei/asciidoctor-pdf-cjk-kai_gen_gothic/releases/download/v0.1.0-fonts/KaiGenGothicKR-Regular-Italic.ttf','.\fonts\KaiGenGothicKR-Regular-Italic.ttf')"
+powershell "(New-Object System.Net.WebClient).DownloadFile('https://github.com/chloerei/asciidoctor-pdf-cjk-kai_gen_gothic/releases/download/v0.1.0-fonts/KaiGenGothicKR-Regular.ttf','.\fonts\KaiGenGothicKR-Regular.ttf')"
