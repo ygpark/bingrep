@@ -1,0 +1,100 @@
+:toc:
+:toc-title: 차례
+
+= README
+
+== 환경설정
+
+이 책은 ``asciidoc``으로 만들어졌습니다. 그래서 html이나 pdf형식으로 변환하려면 ``ruby``와 ``asciidoctor`` 그리고 ``make``가 필요합니다.
+
+
+
+=== ruby 설치하기
+
+2가지만 기억하세요.
+
+1. Devkit이 포함된 ruby 설치하기
+2. 마지막 검은색 명령창에서 ``1 + 엔터``, ``2 + 엔터``, ``3 + 엔터``
+
+
+link:https://rubyinstaller.org/downloads/[루비 공식 홈페이지](link:https://rubyinstaller.org/downloads/[])에서  ``rubyinstaller-devkit-3.0.2-1-x64.exe``를 다운로드해서 설치합니다.
+
+마지막 검은색 명령창이 떴을 때가 가장 중요해요. 반드시 ``1 엔터``, ``2 엔터``, ``3 엔터`` 를 순서대로 입력해야합니다.
+
+image::./images/readme/ruby-setup-001.png[공식 ruby 홈페이지,width=500,align=center]
+image::./images/readme/ruby-setup-002.png[설치 1단계,width=500,align=center]
+image::./images/readme/ruby-setup-003.png[설치 2단계,width=500,align=center]
+image::./images/readme/ruby-setup-004.png[설치 3단계,width=500,align=center]
+image::./images/readme/ruby-setup-005.png[설치 4단계,width=500,align=center]
+image::./images/readme/ruby-setup-006.png[설치 5단계,width=500,align=center]
+image::./images/readme/ruby-setup-007.png[설치 6단계,width=500,align=center]
+
+
+
+=== git 설치하기
+
+이미 git이 설치되어 있겠지만.
+
+git을 설치하는 이유는 제가 git-bash를 사용하기 때문이에요.
+
+link:https://git-scm.com/[Git 공식 홈페이지(https://git-scm.com/)]에서 다운로드해서 설치합시다.
+
+
+
+=== make 설치하기
+
+make도 필요해요. 이건 윈도우 패키지 관리자 Chocolatey를 사용해서 설치하는 것이 좋습니다. choco를 설치하는 방법은 link:https://chocolatey.org/install[Chocolatey 공식 홈페이지(https://chocolatey.org/install)]를 참고하세요.
+
+[source,powershell]
+----
+choco install make
+----
+
+
+
+=== asciidoctor관련 패키지 설치
+
+progit2에 있는 Gemfile은 왜인지 bundle로 설치할 때 종속성 오류가 계속 발생합니다.
+테스트해보니 그냥 단순하게 ``gem install 패키지명``명령으로 설치하면 오류가 생기지 않네요. 그래서 그냥 ``make bundle``명령으로 ``gem install``하도록 설정했습니다.
+
+[source,bash]
+----
+gem install bundler
+make bundle
+make font
+----
+
+== 책 생성하기
+
+모든 형식의 책을 생성하려면 git-bash에서 ``make``를 입력하세요.
+
+[source,bash]
+----
+make
+----
+
+특정 형식의 책을 만들수도 있고:
+
+[source,bash]
+----
+make html
+make pdf
+----
+
+다른 것도 할 수 있어요:
+
+[source,bash]
+----
+make readme
+make test
+----
+
+== 저장소를 처음 상태로 정리하기
+
+이건 저장소를 처음 상태로 정리하는 명령.
+
+[source,bash]
+----
+make clean
+----
+

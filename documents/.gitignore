@@ -1,0 +1,5 @@
+fonts
+_book
+Gemfile.lock
+*.html
+*.pdf

@@ -1,0 +1,23 @@
+== 매뉴얼
+
+
+=== 설치
+
+
+=== 정규표현식 문법
+
+
+=== 사용법
+
+기본적인 사용법은 리눅스 명령어 grep과 유사합니다.
+
+WARNING: 옵션에 VALUE가 할당될 때 반드시 대입 ``=`` 연산자가 필요합니다.
+
+image::./images/1_bingrep_help.png[]
+
+image::./images/2_bingrep_physical_list.png[]
+
+image::./images/3_bingrep_hexview.png[]
+
+image::./images/4_bingrep_regex.png[]
+
