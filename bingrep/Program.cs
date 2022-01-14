@@ -31,6 +31,47 @@ namespace bingrep
 
         static void Main(string[] args)
         {
+
+            byte[] dataHasPattern = new byte[256];
+            for (int i = 0; i < 256; i++)
+            {
+                dataHasPattern[i] = (byte)i;
+            }
+            byte[] data100MB = new byte[100 * 1024 * 1024];//버퍼를 100MB로 잡고 x86으로 빌드하면 Access Violation 오류 발생.
+
+            string pattern = "\x01\x02\x03\x04\x05\x06\x07\x08[\x00-\xFF]\x0A";
+
+
+
+            Stopwatch watch = new Stopwatch();
+
+            //검사할 데이터 준비
+            int writeCount = 0;
+            for (int i = 0; i < data100MB.Length; i += 512)
+            {
+                Array.Copy(dataHasPattern, 0, data100MB, i, dataHasPattern.Length);
+                writeCount++;
+            }
+            Console.WriteLine("준비: 100MB 메모리에 {0}개 패턴 쓰기 완료.", writeCount);
+
+            for (int i = 0; i < 4; i++)
+            {
+                watch.Reset();
+                watch.Start();
+                Re2.Net.MatchCollection matches = BinaryRegex.Matches(data100MB, pattern);
+                foreach (Re2.Net.Match item in matches)
+                {
+                    //if (item.Index == 1)
+                    //{
+                    //    item.Success
+                    //}
+                }
+                watch.Stop();
+                Console.WriteLine($"C++(소요시간: {watch.Elapsed}) (매치: {matches.Count})");
+            }
+            return;
+
+
             Debug.Listeners.Add(new TextWriterTraceListener(Console.Out));
             Debug.AutoFlush = true;
 
