@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using Dotnet = System.Text.RegularExpressions;
+using DotnetRegex = System.Text.RegularExpressions;
 using GhostYak.IO;
 using GhostYak.Text;
 using GhostYak.Text.RegularExpressions;
@@ -28,6 +28,9 @@ namespace bingrep
         static int _lineWidth = 16;
         static int _limit = 0;
         static int _sector = 512;
+        static int _develop = 0;
+        
+        
 
         static void Main(string[] args)
         {
@@ -47,6 +50,7 @@ namespace bingrep
                 .Add("n=|line=", "출력할 라인 수 [기본값: 0(무제한)]", v => _limit = int.Parse(v))
                 .Add("s=|position=", "시작 위치 (단위: byte)", v => _pos = long.Parse(v))
                 .Add("t=|separator=", "바이트 문자열 분리 기호", v => _separator = v)
+                .Add("d=|develop", "개발용 함수 사용", v => _develop = int.Parse(v))
                 ;
 
             o.Parse(args);
@@ -99,65 +103,64 @@ namespace bingrep
             }
 
             _fileName = args[0];
-            bool isPhysicalDisk = Dotnet.Regex.IsMatch(_fileName, @"\\\\.\\PHYSICALDRIVE[0-9]+");
+            bool isPhysicalDisk = DotnetRegex.Regex.IsMatch(_fileName, @"\\\\.\\PHYSICALDRIVE[0-9]+");
             bool isFile = !isPhysicalDisk;
             bool hasRegexCondition = _expression == "" ? false : true;
 
-            if (_fileName != string.Empty)
+            if (_fileName == string.Empty)
             {
-                if (isPhysicalDisk)
-                {
-                    if (!IsAdministrator()) {
-                        Console.WriteLine("관리자 권한이 필요합니다. 터미널을 관리자권한으로 실행하세요.");
-                        return;
-                    }
-
-                    PhysicalStorage ps = new PhysicalStorage(_fileName);
-                    _sector = ps.BytesPerSector;
-                    stream = ps.OpenRead();
-                    fileSize = ps.Size;
-
-                } else {
-
-                    string ext = Path.GetExtension(_fileName);
-                    if (ext.ToLower() == ".e01") {
-                        EWFStorage storage = new EWFStorage(_fileName);
-                        fileSize = storage.Size;
-                        stream = storage.OpenRead();
-                    } else {
-                        DDImageStorage storage = new DDImageStorage(_fileName);
-                        fileSize = storage.Size;
-                        stream = storage.OpenRead();
-                    }
-                }
-
-                if (fileSize <= _lineWidth) {
-                    Console.WriteLine("width 옵션은 파일 크기보다 작아야 합니다.");
-                    return;
-                }
-
-                stream.Position = _pos;
-
-                if (hasRegexCondition)
-                {
-                    PrintStreamByRegex(stream, _lineWidth, _limit, _separator, _expression);
-                }
-                else if (!hasRegexCondition && isFile)
-                {
-                    PrintFileStream(stream, _lineWidth, _limit, _separator);
-                }
-                else if (!hasRegexCondition && isPhysicalDisk)
-                {
-                    PrintPhysicalStream(stream, _lineWidth, _limit, _separator, _sector);
-                }
-
-                stream.Close();
-
-            } else {
 
                 Console.WriteLine("파일명을 입력해 주세요.");
                 return;
             }
+
+            if (isPhysicalDisk)
+            {
+                if (!IsAdministrator()) {
+                    Console.WriteLine("관리자 권한이 필요합니다. 터미널을 관리자권한으로 실행하세요.");
+                    return;
+                }
+
+                PhysicalStorage ps = new PhysicalStorage(_fileName);
+                _sector = ps.BytesPerSector;
+                stream = ps.OpenRead();
+                fileSize = ps.Size;
+
+            } else {
+
+                string ext = Path.GetExtension(_fileName);
+                if (ext.ToLower() == ".e01") {
+                    EWFStorage storage = new EWFStorage(_fileName);
+                    fileSize = storage.Size;
+                    stream = storage.OpenRead();
+                } else {
+                    DDImageStorage storage = new DDImageStorage(_fileName);
+                    fileSize = storage.Size;
+                    stream = storage.OpenRead();
+                }
+            }
+
+            if (fileSize <= _lineWidth) {
+                Console.WriteLine("width 옵션은 파일 크기보다 작아야 합니다.");
+                return;
+            }
+
+            stream.Position = _pos;
+
+            if (hasRegexCondition)
+            {
+                PrintStreamByRegex(stream, _lineWidth, _limit, _separator, _expression);
+            }
+            else if (!hasRegexCondition && isFile)
+            {
+                PrintFileStream(stream, _lineWidth, _limit, _separator);
+            }
+            else if (!hasRegexCondition && isPhysicalDisk)
+            {
+                PrintPhysicalStream(stream, _lineWidth, _limit, _separator, _sector);
+            }
+
+            stream.Close();
         }
 
 
@@ -198,81 +201,76 @@ namespace bingrep
             }
         }
 
-
-
         private static void PrintStreamByRegex(Stream stream, int width, int limit, string separator, string expression)
         {
-            bool isNotEndOfStream;
             byte[] buffer = new byte[100 * 1024];
+            byte[] bufferValue = new byte[width];
             int BUFFER_SIZE = buffer.Length;
             int numberOfRead;
             int nHexOffsetLength = string.Format("{0:X}", stream.Length).Length;
             int line = 0;
-            long lastHitPos = 0;
-            long newHitPos;
-            long startOffsetToRead = stream.Position;
-            const long BUFFER_PADDING = 200;
+            const long BUFFER_PADDING = 300;//이부분은 정규식 길이 -1만큼이어야함.
             string sHexOffsetLength = nHexOffsetLength.ToString();
-            bool isOverflow = false;
+            long tmpPos;
+            string value;
+            long offset;
+            long latestOffset = -1;
 
             expression = ChangeDotToByteExpression(expression);
 
             while ((numberOfRead = stream.Read(buffer, 0, BUFFER_SIZE)) != 0)
             {
+                //찌꺼기 제거
+                if(numberOfRead != BUFFER_SIZE)
+                {
+                    Array.Clear(buffer, numberOfRead, BUFFER_SIZE - numberOfRead);
+                }
+
                 Re2.Net.MatchCollection matches = BinaryRegex.Matches(buffer, expression);
                 foreach (Re2.Net.Match match in matches)
                 {
-                    newHitPos = startOffsetToRead + match.Index;
-                    if (newHitPos < lastHitPos)
+                    if (buffer.Length >= match.Index + width)
                     {
-                        continue;
+                        value = BitConverter.ToString(buffer, match.Index, width).Replace("-", separator);
+                        offset = stream.Position - numberOfRead + match.Index;
                     }
-                    else if (newHitPos == lastHitPos && isOverflow == false)
+                    else
                     {
-                        continue;
-                    }
-                    else if (newHitPos == lastHitPos && isOverflow == true)
-                    {
-                        isOverflow = false;
+                        //
+                        // 출력해야할 바이트가 buffer 배열 끝에 있는 경우 직접 읽어온다.
+                        //
+                        tmpPos = stream.Position;//push
+                        stream.Position = stream.Position - buffer.Length + match.Index;
+                        stream.Read(bufferValue, 0, width);
+                        stream.Position = tmpPos;//pop
+
+                        value = BitConverter.ToString(bufferValue, 0, width).Replace("-", separator);
+                        offset = stream.Position - numberOfRead + match.Index;
                     }
 
                     //
-                    // 정규식은 hit했는데, 출력할 영역이 buffer overflow 발생할 경우 hit 지점부터 다시 Read한다.
-                    // BufferOverflow 오류 방지 목적
+                    // BUFFER_PADDING에 의한 중복 Hit 방지
                     //
-                    if (buffer.Length < match.Index + width)
+                    if (0 < latestOffset && latestOffset == offset)
                     {
-                        lastHitPos = startOffsetToRead + match.Index;
-                        stream.Position = lastHitPos;
-                        startOffsetToRead = stream.Position;
-                        isOverflow = true;
-                        break;
+                        continue;
+                    } 
+                    
+                    if (offset != latestOffset)
+                    {
+                        latestOffset = offset;
                     }
-
-                    string value = BitConverter.ToString(buffer, match.Index, width).Replace("-", separator);
-                    long displayOffset = startOffsetToRead + match.Index;
 
                     line++;
 
                     if (_isShowOffset == true)
-                        Console.WriteLine(string.Format("{0:X" + sHexOffsetLength + "}h : {1}", displayOffset, value));
+                        Console.WriteLine(string.Format("{0:X" + sHexOffsetLength + "}h : {1}", offset, value));
                     else
                         Console.WriteLine($"{value}");
-
-                    lastHitPos = startOffsetToRead + match.Index;
                 }
 
-
-                isNotEndOfStream = (numberOfRead == BUFFER_SIZE);
-                if (isNotEndOfStream && !isOverflow)
+                if (numberOfRead == buffer.Length)
                 {
-                    /*
-                     * BUFFER_PADDING
-                     * 
-                     * 다음 버퍼를 읽어올 때 BUFFER_PADDING 만큼 중첩해서 읽는다. 
-                     * 정규식이 BUFFER와 다음 BUFFER 사이에 끼어있을 때를 방지하기 위한 장치이다.
-                     * CCTV용 정규식은 보통 150~200정도 나온다.
-                     */
                     stream.Position = stream.Position - BUFFER_PADDING;
                 }
 
@@ -281,13 +279,8 @@ namespace bingrep
                 {
                     break;
                 }
-
-                //상태 저장
-                startOffsetToRead = stream.Position;
             }
         }
-
-
 
         private static void PrintFileStream(Stream stream, int width, int limit, string separator)
         {
