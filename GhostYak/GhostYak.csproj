@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>GhostYak</RootNamespace>
     <AssemblyName>GhostYak</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>false</Deterministic>
@@ -184,6 +184,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Text\HexConverter.cs" />
     <Compile Include="Text\RegularExpressions\BinaryRegex.cs" />
+    <Compile Include="Text\RegularExpressions\BinaryRegexNet.cs" />
     <Compile Include="Version.cs" />
   </ItemGroup>
   <ItemGroup>
