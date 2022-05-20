@@ -209,7 +209,7 @@ namespace bingrep
             int numberOfRead;
             int nHexOffsetLength = string.Format("{0:X}", stream.Length).Length;
             int line = 0;
-            const long BUFFER_PADDING = 300;//이부분은 정규식 길이 -1만큼이어야함.
+            const long BUFFER_PADDING = 300;//<주의> 반드시 buffer[] 사이즈보다 작을 것
             string sHexOffsetLength = nHexOffsetLength.ToString();
             long tmpPos;
             string value;
