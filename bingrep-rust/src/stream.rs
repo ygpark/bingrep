@@ -6,12 +6,18 @@ use regex::bytes::Regex;
 use std::fs::File;
 use std::io::{Read, Seek, SeekFrom};
 
+/// File processor for handling binary file searching and hex dump operations
 pub struct FileProcessor {
     config: Config,
     buffer_manager: BufferManager,
 }
 
 impl FileProcessor {
+    /// Create a new FileProcessor with the given configuration
+    ///
+    /// # Arguments
+    ///
+    /// * `config` - Configuration settings for buffer sizes and limits
     pub fn new(config: Config) -> Self {
         let buffer_size = config.buffer_size;
         let max_extra_size = config.max_line_width.max(1024); // At least 1KB for extra buffer
@@ -24,6 +30,17 @@ impl FileProcessor {
     }
 
     /// Process file without regex - simple hex dump
+    ///
+    /// Reads a file and outputs its contents in hexadecimal format.
+    ///
+    /// # Arguments
+    ///
+    /// * `file` - File to read from
+    /// * `width` - Number of bytes to display per line
+    /// * `limit` - Maximum number of lines to output (0 for unlimited)
+    /// * `separator` - String to separate hex bytes
+    /// * `show_offset` - Whether to display offset values
+    /// * `file_size` - Total size of the file for offset formatting
     pub fn process_file_stream(
         &mut self,
         file: &mut File,
@@ -63,6 +80,17 @@ impl FileProcessor {
     }
 
     /// Process file with regex pattern matching
+    ///
+    /// Searches a file for regex pattern matches and outputs matching regions.
+    ///
+    /// # Arguments
+    ///
+    /// * `file` - File to search in
+    /// * `regex` - Compiled regex pattern to search for
+    /// * `width` - Number of bytes to display per match
+    /// * `limit` - Maximum number of matches to output (0 for unlimited)
+    /// * `separator` - String to separate hex bytes
+    /// * `show_offset` - Whether to display offset values
     pub fn process_stream_by_regex(
         &mut self,
         file: &mut File,
@@ -89,15 +117,26 @@ impl FileProcessor {
                 break;
             }
 
-            // Find regex matches by cloning match info to avoid borrow conflicts
-            let match_positions: Vec<(usize, usize)> = {
-                let buffer_slice = self.buffer_manager.get_main_slice(0, bytes_read);
-                regex.find_iter(buffer_slice)
-                    .map(|mat| (mat.start(), mat.end()))
-                    .collect()
-            };
+            // Process regex matches directly without collecting into vector
+            let buffer_slice = self.buffer_manager.get_main_slice(0, bytes_read);
+            let mut matches_to_process = Vec::new();
 
-            for (match_start, _match_end) in match_positions {
+            // Only collect match positions that we actually need to process
+            for mat in regex.find_iter(buffer_slice) {
+                let match_start = mat.start();
+                let new_hit_pos = start_offset + match_start as u64;
+
+                // Skip duplicates early
+                if new_hit_pos as i64 > last_hit_pos {
+                    matches_to_process.push(match_start);
+                    // Limit collection for memory efficiency
+                    if limit > 0 && matches_to_process.len() >= limit - line {
+                        break;
+                    }
+                }
+            }
+
+            for match_start in matches_to_process {
                 let new_hit_pos = start_offset + match_start as u64;
 
                 // Prevent duplicates

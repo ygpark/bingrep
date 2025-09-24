@@ -1,4 +1,4 @@
-use bingrep_rust::benchmark_utils::{BenchmarkUtils, EngineComparison};
+use bingrep_rust::benchmark_utils::BenchmarkUtils;
 use bingrep_rust::regex_processor::RegexProcessor;
 use bingrep_rust::pcre2_processor::Pcre2Processor;
 use std::time::Instant;
@@ -49,7 +49,7 @@ fn main() {
                             matches.len()
                         },
                         || {
-                            let matches = Pcre2Processor::find_matches(&pcre2_regex, &test_data);
+                            let matches = Pcre2Processor::find_matches(&pcre2_regex, &test_data).unwrap_or_default();
                             matches.len()
                         },
                     );
@@ -112,7 +112,7 @@ fn main() {
         let pcre2_chunk_start = Instant::now();
         let mut pcre2_total_matches = 0;
         for chunk in &chunks {
-            pcre2_total_matches += Pcre2Processor::find_matches(&pcre2_regex, chunk).len();
+            pcre2_total_matches += Pcre2Processor::find_matches(&pcre2_regex, chunk).unwrap_or_default().len();
         }
         let pcre2_chunk_time = pcre2_chunk_start.elapsed();
 

@@ -1,6 +1,9 @@
 use std::io::{Read, Result};
 
 /// Buffer manager for efficient memory reuse during file processing
+///
+/// Manages multiple reusable buffers to minimize allocations during
+/// file reading and pattern matching operations.
 pub struct BufferManager {
     main_buffer: Vec<u8>,
     extra_buffer: Vec<u8>,
@@ -8,6 +11,12 @@ pub struct BufferManager {
 }
 
 impl BufferManager {
+    /// Create a new BufferManager with specified buffer sizes
+    ///
+    /// # Arguments
+    ///
+    /// * `buffer_size` - Size of the main buffer for file reading
+    /// * `max_extra_size` - Initial size of the extra buffer for overflow handling
     pub fn new(buffer_size: usize, max_extra_size: usize) -> Self {
         Self {
             main_buffer: vec![0u8; buffer_size],
@@ -16,12 +25,17 @@ impl BufferManager {
         }
     }
 
-    /// Get a reference to the main buffer
+    /// Get a mutable reference to the main buffer
+    ///
+    /// Returns the main buffer used for primary file reading operations
     pub fn get_main_buffer(&mut self) -> &mut Vec<u8> {
         &mut self.main_buffer
     }
 
-    /// Get a reference to the extra buffer, resizing if needed
+    /// Get a mutable reference to the extra buffer, resizing if needed
+    ///
+    /// Automatically resizes the extra buffer if the requested size is larger
+    /// than the current capacity.
     pub fn get_extra_buffer(&mut self, needed_size: usize) -> &mut Vec<u8> {
         if self.extra_buffer.len() < needed_size {
             self.extra_buffer.resize(needed_size, 0);
@@ -30,11 +44,17 @@ impl BufferManager {
     }
 
     /// Read data into main buffer
+    ///
+    /// Reads data from the given reader into the main buffer and returns
+    /// the number of bytes read.
     pub fn read_into_main<R: Read>(&mut self, reader: &mut R) -> Result<usize> {
         reader.read(&mut self.main_buffer)
     }
 
     /// Read data into extra buffer
+    ///
+    /// Reads up to `size` bytes from the reader into the extra buffer,
+    /// resizing it if necessary.
     pub fn read_into_extra<R: Read>(&mut self, reader: &mut R, size: usize) -> Result<usize> {
         let buffer = self.get_extra_buffer(size);
         let bytes_read = reader.read(&mut buffer[..size])?;
@@ -42,6 +62,9 @@ impl BufferManager {
     }
 
     /// Combine data from main buffer and extra buffer into temp buffer
+    ///
+    /// Creates a contiguous view of data spanning both buffers, useful for
+    /// handling patterns that cross buffer boundaries.
     pub fn combine_buffers(
         &mut self,
         main_start: usize,
@@ -54,12 +77,16 @@ impl BufferManager {
         &self.temp_buffer
     }
 
-    /// Get slice from main buffer
+    /// Get an immutable slice from the main buffer
+    ///
+    /// Returns a slice of the main buffer from `start` to `end` indices
     pub fn get_main_slice(&self, start: usize, end: usize) -> &[u8] {
         &self.main_buffer[start..end]
     }
 
-    /// Get slice from extra buffer
+    /// Get an immutable slice from the extra buffer
+    ///
+    /// Returns a slice of the extra buffer up to the specified size
     pub fn get_extra_slice(&self, size: usize) -> &[u8] {
         &self.extra_buffer[..size]
     }

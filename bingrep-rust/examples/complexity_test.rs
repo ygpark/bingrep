@@ -59,7 +59,7 @@ fn main() {
                     let pcre2_duration = pcre2_start.elapsed();
 
                     println!("      Rust regex: {:?} ({} matches)", rust_duration, rust_matches.len());
-                    println!("      PCRE2: {:?} ({} matches)", pcre2_duration, pcre2_matches.len());
+                    println!("      PCRE2: {:?} ({} matches)", pcre2_duration, pcre2_matches.unwrap_or_default().len());
 
                     // 시간 복잡도 경고
                     if rust_duration > Duration::from_millis(10) {
@@ -104,7 +104,7 @@ fn main() {
                     rust_duration, rust_matches.len(),
                     rust_duration.as_nanos() as f64 / size as f64);
             println!("    PCRE2: {:?} ({} matches, {:.2} ns/byte)",
-                    pcre2_duration, pcre2_matches.len(),
+                    pcre2_duration, pcre2_matches.unwrap_or_default().len(),
                     pcre2_duration.as_nanos() as f64 / size as f64);
         }
     }
@@ -156,7 +156,7 @@ fn extreme_case_test() {
                 rust_duration, rust_matches.len(),
                 (huge_size as f64 / 1024.0 / 1024.0) / rust_duration.as_secs_f64());
         println!("    PCRE2: {:?} ({} matches, {:.2} MB/s)",
-                pcre2_duration, pcre2_matches.len(),
+                pcre2_duration, pcre2_matches.unwrap_or_default().len(),
                 (huge_size as f64 / 1024.0 / 1024.0) / pcre2_duration.as_secs_f64());
 
         // 선형성 확인

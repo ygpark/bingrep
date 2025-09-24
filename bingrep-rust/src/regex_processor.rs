@@ -1,10 +1,27 @@
 use crate::error::{BingrepError, Result};
 use regex::bytes::Regex;
 
+/// Processor for handling regular expression patterns with hexadecimal escape sequences
 pub struct RegexProcessor;
 
 impl RegexProcessor {
     /// Process and compile a regex pattern that may contain hex escapes and quantifiers
+    ///
+    /// # Arguments
+    ///
+    /// * `expression` - A regex pattern string that may contain \xHH hex escape sequences
+    ///
+    /// # Returns
+    ///
+    /// * `Result<Regex>` - Compiled regex pattern or error
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use bingrep_rust::RegexProcessor;
+    /// let regex = RegexProcessor::compile_pattern("\\x00\\x01\\x02").unwrap();
+    /// let regex_with_quantifier = RegexProcessor::compile_pattern("\\x58{2,3}").unwrap();
+    /// ```
     pub fn compile_pattern(expression: &str) -> Result<Regex> {
         let pattern = if expression.contains("\\x") && !Self::has_regex_metacharacters(expression) {
             // Simple \xHH pattern - convert to binary then escape for regex
@@ -24,6 +41,9 @@ impl RegexProcessor {
     }
 
     /// Parse \xHH sequences into bytes
+    ///
+    /// Extracts hexadecimal byte values from a pattern string containing \xHH sequences.
+    /// Non-hex characters are ignored.
     pub fn parse_hex_pattern(pattern: &str) -> Result<Vec<u8>> {
         let mut result = Vec::new();
         let mut chars = pattern.chars().peekable();
@@ -71,6 +91,9 @@ impl RegexProcessor {
     }
 
     /// Escape bytes for regex use
+    ///
+    /// Converts a byte array into a regex-compatible string where each byte
+    /// is represented as \xHH format.
     pub fn escape_bytes_for_regex(bytes: &[u8]) -> String {
         bytes
             .iter()
@@ -82,6 +105,8 @@ impl RegexProcessor {
     }
 
     /// Check if pattern contains regex metacharacters
+    ///
+    /// Returns true if the pattern contains any regex quantifiers or special characters
     fn has_regex_metacharacters(pattern: &str) -> bool {
         pattern.chars().any(|c| {
             matches!(
@@ -92,6 +117,9 @@ impl RegexProcessor {
     }
 
     /// Convert hex escapes in pattern while preserving other regex syntax
+    ///
+    /// Processes a regex pattern to convert \xHH sequences while maintaining
+    /// other regex metacharacters and syntax intact.
     fn convert_hex_escapes_in_pattern(pattern: &str) -> Result<String> {
         let mut result = String::new();
         let mut chars = pattern.chars().peekable();

@@ -1,3 +1,6 @@
+use crate::cli::Cli;
+use crate::error::{BingrepError, Result};
+
 /// Configuration constants and defaults for bingrep
 #[derive(Debug, Clone)]
 pub struct Config {
@@ -19,6 +22,22 @@ impl Default for Config {
 }
 
 impl Config {
+    /// Validate all input parameters from CLI
+    pub fn validate_cli(&self, cli: &Cli) -> Result<()> {
+        // Validate line width
+        if !self.validate_width(cli.line_width) {
+            return Err(BingrepError::InvalidWidth(cli.line_width));
+        }
+
+        // Validate limit (must be non-negative, but usize ensures this)
+        // No additional validation needed for limit
+
+        // Validate position (must be non-negative, but u64 ensures this)
+        // No additional validation needed for position
+
+        Ok(())
+    }
+
     pub fn validate_width(&self, width: usize) -> bool {
         width >= self.min_line_width && width <= self.max_line_width
     }

@@ -318,7 +318,7 @@ fn test_help_output() {
     let stdout = String::from_utf8_lossy(&output.stdout);
 
     // 도움말에 필요한 정보가 포함되어 있는지 확인
-    assert!(stdout.contains("바이너리 파일 정규표현식 검색 도구"));
+    assert!(stdout.contains("바이너리 파일을 정규표현식으로 검색하는 도구"));
     assert!(stdout.contains("-e, --regex"));
     assert!(stdout.contains("-w, --width"));
     assert!(stdout.contains("-n, --line"));

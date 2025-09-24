@@ -1,6 +1,6 @@
 use bingrep_rust::cli::Cli;
 use bingrep_rust::config::Config;
-use bingrep_rust::error::{BingrepError, Result};
+use bingrep_rust::error::Result;
 use bingrep_rust::regex_processor::RegexProcessor;
 use bingrep_rust::stream::FileProcessor;
 use clap::Parser;
@@ -11,33 +11,29 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     // Check file path
-    let file_path = match cli.file_path {
-        Some(path) => path,
+    let file_path = match &cli.file_path {
+        Some(path) => path.clone(),
         None => {
-            Cli::show_help();
+            // Clap will automatically show help when no file path is provided
+            eprintln!("Error: 파일 경로가 필요합니다.\n");
+            eprintln!("사용법: bingrep-rust <파일경로> [옵션]");
+            eprintln!("도움말: bingrep-rust --help");
             return Ok(());
         }
     };
 
     // Open file
-    let mut file = File::open(&file_path)
-        .map_err(BingrepError::Io)?;
-    let file_size = file.metadata()
-        .map_err(BingrepError::Io)?.len();
+    let mut file = File::open(&file_path)?;
+    let file_size = file.metadata()?.len();
 
-    // Create configuration and processor
+    // Create configuration and validate CLI parameters
     let config = Config::default();
-
-    // Validate line width
-    if !config.validate_width(cli.line_width) {
-        return Err(BingrepError::InvalidWidth(cli.line_width));
-    }
+    config.validate_cli(&cli)?;
 
     let mut processor = FileProcessor::new(config);
 
     // Seek to starting position
-    file.seek(SeekFrom::Start(cli.position))
-        .map_err(BingrepError::Io)?;
+    file.seek(SeekFrom::Start(cli.position))?;
 
     // Process file with or without regex
     if let Some(expression) = cli.expression {

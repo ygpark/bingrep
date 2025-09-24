@@ -148,16 +148,19 @@ impl Pcre2Processor {
     }
 
     /// Find all matches in the given data using PCRE2
-    pub fn find_matches(regex: &Pcre2Regex, data: &[u8]) -> Vec<(usize, usize)> {
+    pub fn find_matches(regex: &Pcre2Regex, data: &[u8]) -> Result<Vec<(usize, usize)>> {
         let mut matches = Vec::new();
 
         for mat in regex.find_iter(data) {
-            if let Ok(m) = mat {
-                matches.push((m.start(), m.end()));
+            match mat {
+                Ok(m) => matches.push((m.start(), m.end())),
+                Err(err) => return Err(BingrepError::RegexCompilation(
+                    format!("PCRE2 match error: {}", err)
+                )),
             }
         }
 
-        matches
+        Ok(matches)
     }
 }
 
@@ -188,7 +191,7 @@ mod tests {
     fn test_pcre2_find_matches() {
         let regex = Pcre2Processor::compile_pattern("\\x41\\x42").unwrap(); // "AB"
         let data = b"XABCABDEFAB";
-        let matches = Pcre2Processor::find_matches(&regex, data);
+        let matches = Pcre2Processor::find_matches(&regex, data).unwrap();
 
         // Should find "AB" matches at positions 1, 4, and 9
         assert_eq!(matches.len(), 3);
