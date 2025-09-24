@@ -6,8 +6,14 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }
 regex = "1.10"
+pcre2 = "0.2"
 hex = "0.4"
 
 [dev-dependencies]
 uuid = { version = "1.0", features = ["v4"] }
 tempfile = "3.8"
+criterion = "0.5"
+
+[[bench]]
+name = "regex_engine_comparison"
+harness = false
