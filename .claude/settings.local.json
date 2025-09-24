@@ -5,7 +5,13 @@
       "Bash(./target/debug/bingrep-rust:*)",
       "Bash(xxd:*)",
       "Bash(./target/release/bingrep-rust:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(go mod:*)",
+      "Bash(go build:*)",
+      "Bash(./bin/bingrep-go:*)",
+      "Bash(go test:*)",
+      "Bash(make test:*)",
+      "Bash(go run:*)"
     ],
     "deny": [],
     "ask": []

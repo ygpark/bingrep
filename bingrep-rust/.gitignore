@@ -1,55 +1,44 @@
-# Rust
-target/
+# Rust build artifacts
+/target/
 Cargo.lock
 
-# IDE
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
+# OS files
 .DS_Store
-.DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
 ehthumbs.db
 Thumbs.db
 
-# Logs
+# Logs and runtime data
 *.log
-
-# Runtime data
-pids
 *.pid
 *.seed
 *.pid.lock
+pids
 
 # Temporary files
 *.tmp
 *.temp
+*.bak
+*.orig
 
-# Benchmark results
-criterion/
-bench_results/
-
-# Test files
+# Test and benchmark data
 test_data/
 *.test
 test_*.bin
+criterion/
+bench_results/
 
-# Build artifacts
-*.exe
-*.dll
-*.so
-*.dylib
-
-# Documentation build
+# Documentation and coverage
 /doc/
-
-# Coverage reports
 tarpaulin-report.html
 lcov.info
 coverage/
@@ -58,13 +47,15 @@ coverage/
 flamegraph.svg
 perf.data*
 
+# Build artifacts (cross-platform)
+*.exe
+*.dll
+*.so
+*.dylib
+
 # Local configuration
 .env
 .env.local
-
-# Backup files
-*.bak
-*.orig
 
 # Editor temporary files
 .#*

@@ -17,3 +17,11 @@ criterion = "0.5"
 [[bench]]
 name = "regex_engine_comparison"
 harness = false
+
+[package.metadata.scripts]
+bench = "cargo run --example quick_benchmark --release && cargo run --example complexity_test --release"
+bench-quick = "cargo run --example quick_benchmark --release"
+bench-complexity = "cargo run --example complexity_test --release"
+bench-full = "cargo bench"
+dev-test = "cargo test && cargo clippy"
+pre-commit = "cargo fmt && cargo clippy && cargo test"
