@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cargo:*)",
+      "Bash(./target/debug/bingrep-rust:*)",
+      "Bash(xxd:*)",
+      "Bash(./target/release/bingrep-rust:*)",
+      "Bash(chmod:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
