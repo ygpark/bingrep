@@ -15,7 +15,9 @@ impl fmt::Display for BingrepError {
             BingrepError::Io(err) => write!(f, "IO error: {}", err),
             BingrepError::InvalidPattern(msg) => write!(f, "Invalid pattern: {}", msg),
             BingrepError::InvalidWidth(width) => {
-                write!(f, "Invalid width {}: must be between 1 and 8192", width)
+                let config = crate::Config::default();
+                write!(f, "Invalid width {}: must be between {} and {}",
+                    width, config.get_min_width(), config.get_max_width())
             }
             BingrepError::RegexCompilation(msg) => write!(f, "Regex compilation error: {}", msg),
         }

@@ -4,6 +4,7 @@ pub mod regex_processor;
 pub mod output;
 pub mod stream;
 pub mod error;
+pub mod buffer_manager;
 
 pub use cli::Cli;
 pub use config::Config;

@@ -1,3 +1,4 @@
+use crate::buffer_manager::BufferManager;
 use crate::config::Config;
 use crate::error::Result;
 use crate::output::OutputFormatter;
@@ -7,16 +8,24 @@ use std::io::{Read, Seek, SeekFrom};
 
 pub struct FileProcessor {
     config: Config,
+    buffer_manager: BufferManager,
 }
 
 impl FileProcessor {
     pub fn new(config: Config) -> Self {
-        Self { config }
+        let buffer_size = config.buffer_size;
+        let max_extra_size = config.max_line_width.max(1024); // At least 1KB for extra buffer
+        let buffer_manager = BufferManager::new(buffer_size, max_extra_size);
+
+        Self {
+            config,
+            buffer_manager,
+        }
     }
 
     /// Process file without regex - simple hex dump
     pub fn process_file_stream(
-        &self,
+        &mut self,
         file: &mut File,
         width: usize,
         limit: usize,
@@ -24,13 +33,15 @@ impl FileProcessor {
         show_offset: bool,
         file_size: u64,
     ) -> Result<()> {
-        let mut buffer = vec![0u8; width];
         let mut pos = file.stream_position()?;
         let mut line = 0;
         let hex_offset_length = OutputFormatter::calculate_hex_offset_length(file_size);
 
+        // Get a reusable buffer of the right size
+        let buffer = self.buffer_manager.get_extra_buffer(width);
+
         loop {
-            let bytes_read = file.read(&mut buffer)?;
+            let bytes_read = file.read(&mut buffer[..width])?;
             if bytes_read == 0 {
                 break;
             }
@@ -53,7 +64,7 @@ impl FileProcessor {
 
     /// Process file with regex pattern matching
     pub fn process_stream_by_regex(
-        &self,
+        &mut self,
         file: &mut File,
         regex: &Regex,
         width: usize,
@@ -61,10 +72,9 @@ impl FileProcessor {
         separator: &str,
         show_offset: bool,
     ) -> Result<()> {
-        let buffer_size = self.config.get_buffer_size();
+        let buffer_size = self.config.get_buffer_size(width);
         let buffer_padding = self.config.buffer_padding;
 
-        let mut buffer = vec![0u8; buffer_size];
         let mut line = 0;
         let mut last_hit_pos: i64 = -1;
 
@@ -73,17 +83,22 @@ impl FileProcessor {
 
         loop {
             let start_offset = file.stream_position()?;
-            let bytes_read = file.read(&mut buffer)?;
+            let bytes_read = self.buffer_manager.read_into_main(file)?;
 
             if bytes_read == 0 {
                 break;
             }
 
-            // Find regex matches
-            let matches: Vec<_> = regex.find_iter(&buffer[..bytes_read]).collect();
+            // Find regex matches by cloning match info to avoid borrow conflicts
+            let match_positions: Vec<(usize, usize)> = {
+                let buffer_slice = self.buffer_manager.get_main_slice(0, bytes_read);
+                regex.find_iter(buffer_slice)
+                    .map(|mat| (mat.start(), mat.end()))
+                    .collect()
+            };
 
-            for mat in matches {
-                let new_hit_pos = start_offset + mat.start() as u64;
+            for (match_start, _match_end) in match_positions {
+                let new_hit_pos = start_offset + match_start as u64;
 
                 // Prevent duplicates
                 if new_hit_pos as i64 <= last_hit_pos {
@@ -91,7 +106,7 @@ impl FileProcessor {
                 }
 
                 // Handle buffer overflow - seek to match position if needed
-                if mat.start() + width > bytes_read && bytes_read == buffer_size {
+                if match_start + width > bytes_read && bytes_read == buffer_size {
                     file.seek(SeekFrom::Start(new_hit_pos))?;
                     last_hit_pos = new_hit_pos as i64;
                     break;
@@ -102,8 +117,7 @@ impl FileProcessor {
                 // Read width bytes from match position
                 let hex_string = self.read_match_data(
                     file,
-                    &buffer,
-                    mat.start(),
+                    match_start,
                     width,
                     bytes_read,
                     start_offset,
@@ -133,9 +147,8 @@ impl FileProcessor {
 
     /// Read match data, handling cases where width extends beyond buffer
     fn read_match_data(
-        &self,
+        &mut self,
         file: &mut File,
-        buffer: &[u8],
         match_start: usize,
         width: usize,
         bytes_read: usize,
@@ -147,22 +160,25 @@ impl FileProcessor {
 
         if actual_width < width && match_start + width > bytes_read {
             // Need to read additional data from file
-            let mut result_bytes = buffer[match_start..end_pos].to_vec();
-
-            // Read remaining data
             let current_pos = file.stream_position()?;
             file.seek(SeekFrom::Start(start_offset + end_pos as u64))?;
-            let mut extra_buffer = vec![0u8; width - actual_width];
-            let extra_read = file.read(&mut extra_buffer)?;
-            result_bytes.extend_from_slice(&extra_buffer[..extra_read]);
+
+            let extra_needed = width - actual_width;
+            let extra_read = self.buffer_manager.read_into_extra(file, extra_needed)?;
+
+            // Combine data using buffer manager
+            let combined_data = self.buffer_manager.combine_buffers(
+                match_start,
+                end_pos,
+                extra_read,
+            );
+
             file.seek(SeekFrom::Start(current_pos))?;
 
-            Ok(OutputFormatter::format_bytes_as_hex(&result_bytes, separator))
+            Ok(OutputFormatter::format_bytes_as_hex(combined_data, separator))
         } else {
-            Ok(OutputFormatter::format_bytes_as_hex(
-                &buffer[match_start..end_pos],
-                separator,
-            ))
+            let main_slice = self.buffer_manager.get_main_slice(match_start, end_pos);
+            Ok(OutputFormatter::format_bytes_as_hex(main_slice, separator))
         }
     }
 }
@@ -183,7 +199,7 @@ mod tests {
     #[test]
     fn test_process_file_stream() -> Result<()> {
         let config = Config::default();
-        let processor = FileProcessor::new(config);
+        let mut processor = FileProcessor::new(config);
 
         // Create a temporary file with test data
         let mut temp_file = NamedTempFile::new().unwrap();

@@ -33,7 +33,7 @@ fn main() -> Result<()> {
         return Err(BingrepError::InvalidWidth(cli.line_width));
     }
 
-    let processor = FileProcessor::new(config);
+    let mut processor = FileProcessor::new(config);
 
     // Seek to starting position
     file.seek(SeekFrom::Start(cli.position))

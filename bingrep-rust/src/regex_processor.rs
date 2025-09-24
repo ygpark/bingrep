@@ -8,7 +8,7 @@ impl RegexProcessor {
     pub fn compile_pattern(expression: &str) -> Result<Regex> {
         let pattern = if expression.contains("\\x") && !Self::has_regex_metacharacters(expression) {
             // Simple \xHH pattern - convert to binary then escape for regex
-            let binary_pattern = Self::parse_hex_pattern(expression);
+            let binary_pattern = Self::parse_hex_pattern(expression)?;
             if binary_pattern.is_empty() {
                 return Err(BingrepError::InvalidPattern(
                     "No valid hex pattern found".to_string(),
@@ -17,14 +17,14 @@ impl RegexProcessor {
             Self::escape_bytes_for_regex(&binary_pattern)
         } else {
             // Pattern with regex metacharacters - convert only \xHH while preserving quantifiers
-            Self::convert_hex_escapes_in_pattern(expression)
+            Self::convert_hex_escapes_in_pattern(expression)?
         };
 
         Regex::new(&pattern).map_err(BingrepError::from)
     }
 
     /// Parse \xHH sequences into bytes
-    pub fn parse_hex_pattern(pattern: &str) -> Vec<u8> {
+    pub fn parse_hex_pattern(pattern: &str) -> Result<Vec<u8>> {
         let mut result = Vec::new();
         let mut chars = pattern.chars().peekable();
 
@@ -38,11 +38,27 @@ impl RegexProcessor {
                         let hex1 = chars.next();
                         let hex2 = chars.next();
 
-                        if let (Some(h1), Some(h2)) = (hex1, hex2) {
-                            let hex_str = format!("{}{}", h1, h2);
-                            if let Ok(byte) = u8::from_str_radix(&hex_str, 16) {
-                                result.push(byte);
-                                continue;
+                        match (hex1, hex2) {
+                            (Some(h1), Some(h2)) => {
+                                let hex_str = format!("{}{}", h1, h2);
+                                match u8::from_str_radix(&hex_str, 16) {
+                                    Ok(byte) => result.push(byte),
+                                    Err(_) => {
+                                        return Err(BingrepError::InvalidPattern(
+                                            format!("Invalid hex sequence: \\x{}", hex_str)
+                                        ));
+                                    }
+                                }
+                            }
+                            (Some(h1), None) => {
+                                return Err(BingrepError::InvalidPattern(
+                                    format!("Incomplete hex sequence: \\x{}", h1)
+                                ));
+                            }
+                            (None, _) => {
+                                return Err(BingrepError::InvalidPattern(
+                                    "Incomplete hex sequence: \\x".to_string()
+                                ));
                             }
                         }
                     }
@@ -51,7 +67,7 @@ impl RegexProcessor {
             // Ignore non-hex characters for simple patterns
         }
 
-        result
+        Ok(result)
     }
 
     /// Escape bytes for regex use
@@ -76,7 +92,7 @@ impl RegexProcessor {
     }
 
     /// Convert hex escapes in pattern while preserving other regex syntax
-    fn convert_hex_escapes_in_pattern(pattern: &str) -> String {
+    fn convert_hex_escapes_in_pattern(pattern: &str) -> Result<String> {
         let mut result = String::new();
         let mut chars = pattern.chars().peekable();
 
@@ -90,21 +106,31 @@ impl RegexProcessor {
                         let hex1 = chars.next();
                         let hex2 = chars.next();
 
-                        if let (Some(h1), Some(h2)) = (hex1, hex2) {
-                            if let Ok(byte) = u8::from_str_radix(&format!("{}{}", h1, h2), 16) {
-                                // Convert byte to regex form
-                                result.push_str(&format!("\\x{:02x}", byte));
-                                continue;
+                        match (hex1, hex2) {
+                            (Some(h1), Some(h2)) => {
+                                let hex_str = format!("{}{}", h1, h2);
+                                match u8::from_str_radix(&hex_str, 16) {
+                                    Ok(byte) => {
+                                        // Convert byte to regex form
+                                        result.push_str(&format!("\\x{:02x}", byte));
+                                    }
+                                    Err(_) => {
+                                        return Err(BingrepError::InvalidPattern(
+                                            format!("Invalid hex sequence in regex pattern: \\x{}", hex_str)
+                                        ));
+                                    }
+                                }
                             }
-                        }
-                        // If conversion fails, preserve original
-                        result.push('\\');
-                        result.push('x');
-                        if let Some(h1) = hex1 {
-                            result.push(h1);
-                        }
-                        if let Some(h2) = hex2 {
-                            result.push(h2);
+                            (Some(h1), None) => {
+                                return Err(BingrepError::InvalidPattern(
+                                    format!("Incomplete hex sequence in regex pattern: \\x{}", h1)
+                                ));
+                            }
+                            (None, _) => {
+                                return Err(BingrepError::InvalidPattern(
+                                    "Incomplete hex sequence in regex pattern: \\x".to_string()
+                                ));
+                            }
                         }
                     } else {
                         result.push('\\');
@@ -117,7 +143,7 @@ impl RegexProcessor {
             }
         }
 
-        result
+        Ok(result)
     }
 }
 
@@ -128,22 +154,36 @@ mod tests {
     #[test]
     fn test_parse_hex_pattern_basic() {
         let pattern = "\\x00\\x01\\x02\\xFF";
-        let result = RegexProcessor::parse_hex_pattern(pattern);
+        let result = RegexProcessor::parse_hex_pattern(pattern).unwrap();
         assert_eq!(result, vec![0x00, 0x01, 0x02, 0xFF]);
     }
 
     #[test]
     fn test_parse_hex_pattern_mixed_case() {
         let pattern = "\\x0a\\x0B\\xfF\\xAA";
-        let result = RegexProcessor::parse_hex_pattern(pattern);
+        let result = RegexProcessor::parse_hex_pattern(pattern).unwrap();
         assert_eq!(result, vec![0x0a, 0x0B, 0xFF, 0xAA]);
     }
 
     #[test]
     fn test_parse_hex_pattern_with_text() {
         let pattern = "prefix\\x41\\x42\\x43suffix";
-        let result = RegexProcessor::parse_hex_pattern(pattern);
+        let result = RegexProcessor::parse_hex_pattern(pattern).unwrap();
         assert_eq!(result, vec![0x41, 0x42, 0x43]);
+    }
+
+    #[test]
+    fn test_parse_hex_pattern_invalid() {
+        let pattern = "\\xZZ";
+        let result = RegexProcessor::parse_hex_pattern(pattern);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_hex_pattern_incomplete() {
+        let pattern = "\\x4";
+        let result = RegexProcessor::parse_hex_pattern(pattern);
+        assert!(result.is_err());
     }
 
     #[test]

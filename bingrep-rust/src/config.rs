@@ -23,12 +23,20 @@ impl Config {
         width >= self.min_line_width && width <= self.max_line_width
     }
 
-    pub fn get_buffer_size(&self) -> usize {
-        // Use smaller buffer size for width < 1024 to avoid memory waste
-        if self.max_line_width < 1024 {
-            4096
+    pub fn get_buffer_size(&self, width: usize) -> usize {
+        // Use smaller buffer size for small line widths to avoid memory waste
+        if width < 1024 {
+            std::cmp::max(width * 4, 4096) // At least 4KB, or 4x the line width
         } else {
             self.buffer_size
         }
+    }
+
+    pub fn get_min_width(&self) -> usize {
+        self.min_line_width
+    }
+
+    pub fn get_max_width(&self) -> usize {
+        self.max_line_width
     }
 }
