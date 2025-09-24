@@ -1,4 +1,4 @@
-//! # bingrep-rust
+//! # hxgrep
 //!
 //! A binary file regular expression search tool written in Rust.
 //!
@@ -18,7 +18,7 @@
 //! ## Example Usage
 //!
 //! ```no_run
-//! use bingrep_rust::{Config, RegexProcessor, FileProcessor};
+//! use hxgrep::{Config, RegexProcessor, FileProcessor};
 //! use std::fs::File;
 //!
 //! let config = Config::default();

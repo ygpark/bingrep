@@ -1,4 +1,4 @@
-# Makefile for bingrep-rust
+# Makefile for hxgrep
 # 전통적인 make 명령어 지원
 
 .PHONY: all build build-release test test-all clean check fmt clippy dev-test pre-commit ci help

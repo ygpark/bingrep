@@ -18,7 +18,7 @@ impl RegexProcessor {
     /// # Examples
     ///
     /// ```
-    /// use bingrep_rust::RegexProcessor;
+    /// use hxgrep::RegexProcessor;
     /// let regex = RegexProcessor::compile_pattern("\\x00\\x01\\x02").unwrap();
     /// let regex_with_quantifier = RegexProcessor::compile_pattern("\\x58{2,3}").unwrap();
     /// ```

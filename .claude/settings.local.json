@@ -2,9 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(cargo:*)",
-      "Bash(./target/debug/bingrep-rust:*)",
+      "Bash(./target/debug/hxgrep:*)",
       "Bash(xxd:*)",
-      "Bash(./target/release/bingrep-rust:*)",
+      "Bash(./target/release/hxgrep:*)",
       "Bash(chmod:*)",
       "Bash(go mod:*)",
       "Bash(go build:*)",
@@ -12,10 +12,11 @@
       "Bash(go test:*)",
       "Bash(make test:*)",
       "Bash(go run:*)",
-      "Bash(/Users/ghostyak/Documents/github/bingrep/bingrep-rust/target/debug/bingrep-rust \"/tmp/test*.bin\" -e \"\\x01\\x02\\x03\\x04\" --multi)",
-      "Bash(/Users/ghostyak/Documents/github/bingrep/bingrep-rust/target/debug/bingrep-rust -)",
-      "Bash(/Users/ghostyak/Documents/github/bingrep/bingrep-rust/target/debug/bingrep-rust - -e \"\\x00\\x01\\x02\")",
-      "WebSearch"
+      "Bash(/Users/ghostyak/Documents/github/bingrep/hxgrep/target/debug/hxgrep \"/tmp/test*.bin\" -e \"\\x01\\x02\\x03\\x04\" --multi)",
+      "Bash(/Users/ghostyak/Documents/github/bingrep/hxgrep/target/debug/hxgrep -)",
+      "Bash(/Users/ghostyak/Documents/github/bingrep/hxgrep/target/debug/hxgrep - -e \"\\x00\\x01\\x02\")",
+      "WebSearch",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

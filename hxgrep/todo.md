@@ -14,8 +14,8 @@
    [x] 진행률 표시: 화면 출력이 아닌 경우 진행 상황 확인용
 
 4. 사용성 개선
-   [x] 파이프라인 지원 ex) `bingrep-rust - -e "\x00\x01" < input.bin`
-   [x] 색상 출력 ex) `bingrep-rust file.bin -e "\xFF" --color=always`
+   [x] 파이프라인 지원 ex) `hxgrep - -e "\x00\x01" < input.bin`
+   [x] 색상 출력 ex) `hxgrep file.bin -e "\xFF" --color=always`
 
 ## 완료 상태
 

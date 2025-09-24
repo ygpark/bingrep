@@ -1,4 +1,4 @@
-# bingrep-rust
+# hxgrep
 
 바이너리 파일에서 정규표현식 패턴을 검색하는 Rust 기반 도구입니다.
 
@@ -29,22 +29,22 @@ cargo run -- [옵션] <파일경로>
 
 ```bash
 # 파일 내용을 16진수로 출력
-./target/release/bingrep-rust file.bin
+./target/release/hxgrep file.bin
 
 # 정규표현식으로 패턴 검색
-./target/release/bingrep-rust file.bin -e "\x00\x00\x00\x01\x67"
+./target/release/hxgrep file.bin -e "\x00\x00\x00\x01\x67"
 
 # 한 줄에 8바이트씩 출력
-./target/release/bingrep-rust file.bin -w 8
+./target/release/hxgrep file.bin -w 8
 
 # 처음 10줄만 출력
-./target/release/bingrep-rust file.bin -n 10
+./target/release/hxgrep file.bin -n 10
 
 # 오프셋 숨기기
-./target/release/bingrep-rust file.bin --hideoffset
+./target/release/hxgrep file.bin --hideoffset
 
 # 구분자 변경
-./target/release/bingrep-rust file.bin -t "-"
+./target/release/hxgrep file.bin -t "-"
 ```
 
 ### 옵션 설명
@@ -63,49 +63,49 @@ cargo run -- [옵션] <파일경로>
 #### 정규표현식 수량자 사용
 ```bash
 # 정확히 4개의 NULL 바이트
-./target/release/bingrep-rust file.bin -e "\x00{4}"
+./target/release/hxgrep file.bin -e "\x00{4}"
 
 # 2-4개의 NULL 바이트
-./target/release/bingrep-rust file.bin -e "\x00{2,4}"
+./target/release/hxgrep file.bin -e "\x00{2,4}"
 
 # 1개 이상의 0xFF 바이트
-./target/release/bingrep-rust file.bin -e "\xFF+"
+./target/release/hxgrep file.bin -e "\xFF+"
 
 # 0개 이상의 0x20 바이트 (공백)
-./target/release/bingrep-rust file.bin -e "\x20*"
+./target/release/hxgrep file.bin -e "\x20*"
 
 # 선택적인 바이트 (0개 또는 1개)
-./target/release/bingrep-rust file.bin -e "\x0D\x0A?"
+./target/release/hxgrep file.bin -e "\x0D\x0A?"
 ```
 
 #### H.264 NAL Unit 검색
 ```bash
 # SPS (Sequence Parameter Set) 검색
-./target/release/bingrep-rust video.mp4 -e "\x00\x00\x00\x01\x67"
+./target/release/hxgrep video.mp4 -e "\x00\x00\x00\x01\x67"
 
 # PPS (Picture Parameter Set) 검색
-./target/release/bingrep-rust video.mp4 -e "\x00\x00\x00\x01\x68"
+./target/release/hxgrep video.mp4 -e "\x00\x00\x00\x01\x68"
 
 # IDR 프레임 검색
-./target/release/bingrep-rust video.mp4 -e "\x00\x00\x00\x01\x65"
+./target/release/hxgrep video.mp4 -e "\x00\x00\x00\x01\x65"
 
 # 유연한 NAL unit 시작 코드 (2-3개 NULL 바이트)
-./target/release/bingrep-rust video.mp4 -e "\x00{2,3}\x01"
+./target/release/hxgrep video.mp4 -e "\x00{2,3}\x01"
 ```
 
 #### 실행 파일 분석
 ```bash
 # PE 헤더 검색
-./target/release/bingrep-rust program.exe -e "\x4D\x5A" -w 32
+./target/release/hxgrep program.exe -e "\x4D\x5A" -w 32
 
 # ELF 헤더 검색
-./target/release/bingrep-rust program -e "\x7F\x45\x4C\x46" -w 32
+./target/release/hxgrep program -e "\x7F\x45\x4C\x46" -w 32
 ```
 
 #### 데이터베이스 파일 분석
 ```bash
 # SQLite 시그니처 검색
-./target/release/bingrep-rust database.db -e "\x53\x51\x4C\x69\x74\x65"
+./target/release/hxgrep database.db -e "\x53\x51\x4C\x69\x74\x65"
 ```
 
 ## 테스트

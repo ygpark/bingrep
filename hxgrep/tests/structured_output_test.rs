@@ -1,4 +1,4 @@
-use bingrep_rust::structured_output::{
+use hxgrep::structured_output::{
     BinaryMatch, HexDumpLine, OutputFormat, StructuredFormatter,
 };
 
