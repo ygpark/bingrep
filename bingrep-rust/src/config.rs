@@ -13,10 +13,10 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            buffer_size: 64 * 1024,        // 64KB for better performance
-            buffer_padding: 1024,          // To handle patterns across buffer boundaries
-            max_line_width: 8192,          // Maximum bytes per line
-            min_line_width: 1,             // Minimum bytes per line
+            buffer_size: 64 * 1024, // 64KB for better performance
+            buffer_padding: 1024,   // To handle patterns across buffer boundaries
+            max_line_width: 8192,   // Maximum bytes per line
+            min_line_width: 1,      // Minimum bytes per line
         }
     }
 }

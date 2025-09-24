@@ -22,12 +22,7 @@ impl OutputFormatter {
     }
 
     /// Print a line with optional offset
-    pub fn print_line(
-        offset: u64,
-        hex_data: &str,
-        show_offset: bool,
-        hex_offset_length: usize,
-    ) {
+    pub fn print_line(offset: u64, hex_data: &str, show_offset: bool, hex_offset_length: usize) {
         if show_offset {
             println!(
                 "{} : {}",
@@ -37,6 +32,19 @@ impl OutputFormatter {
         } else {
             println!("{}", hex_data);
         }
+    }
+
+    /// Format a line with offset (returns a string instead of printing)
+    pub fn format_line_with_offset(
+        offset: u64,
+        hex_data: &str,
+        hex_offset_length: usize,
+    ) -> String {
+        format!(
+            "{} : {}",
+            Self::format_offset(offset, hex_offset_length),
+            hex_data
+        )
     }
 }
 

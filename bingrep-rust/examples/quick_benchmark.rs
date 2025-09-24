@@ -1,6 +1,6 @@
 use bingrep_rust::benchmark_utils::BenchmarkUtils;
-use bingrep_rust::regex_processor::RegexProcessor;
 use bingrep_rust::pcre2_processor::Pcre2Processor;
+use bingrep_rust::regex_processor::RegexProcessor;
 use std::time::Instant;
 
 fn main() {
@@ -21,7 +21,11 @@ fn main() {
         println!("🔍 패턴: {} ({})", pattern_name, pattern);
 
         for &size in &sizes {
-            println!("  📊 데이터 크기: {} bytes ({:.1} KB)", size, size as f64 / 1024.0);
+            println!(
+                "  📊 데이터 크기: {} bytes ({:.1} KB)",
+                size,
+                size as f64 / 1024.0
+            );
 
             // 테스트 데이터 생성
             let test_data = BenchmarkUtils::generate_binary_file_data(size);
@@ -49,20 +53,33 @@ fn main() {
                             matches.len()
                         },
                         || {
-                            let matches = Pcre2Processor::find_matches(&pcre2_regex, &test_data).unwrap_or_default();
+                            let matches = Pcre2Processor::find_matches(&pcre2_regex, &test_data)
+                                .unwrap_or_default();
                             matches.len()
                         },
                     );
 
                     println!("    ⚡ Rust regex:");
                     println!("      - 컴파일: {:?}", rust_compile_time);
-                    println!("      - 평균 실행: {:?}", comparison.engine1_stats.avg_duration);
-                    println!("      - 처리량: {:.2} MB/s", comparison.engine1_stats.throughput_mb_per_sec);
+                    println!(
+                        "      - 평균 실행: {:?}",
+                        comparison.engine1_stats.avg_duration
+                    );
+                    println!(
+                        "      - 처리량: {:.2} MB/s",
+                        comparison.engine1_stats.throughput_mb_per_sec
+                    );
 
                     println!("    🔧 PCRE2:");
                     println!("      - 컴파일: {:?}", pcre2_compile_time);
-                    println!("      - 평균 실행: {:?}", comparison.engine2_stats.avg_duration);
-                    println!("      - 처리량: {:.2} MB/s", comparison.engine2_stats.throughput_mb_per_sec);
+                    println!(
+                        "      - 평균 실행: {:?}",
+                        comparison.engine2_stats.avg_duration
+                    );
+                    println!(
+                        "      - 처리량: {:.2} MB/s",
+                        comparison.engine2_stats.throughput_mb_per_sec
+                    );
 
                     // 승자 표시
                     let rust_total = rust_compile_time + comparison.engine1_stats.avg_duration;
@@ -92,13 +109,16 @@ fn main() {
 
     if let (Ok(rust_regex), Ok(pcre2_regex)) = (
         RegexProcessor::compile_pattern(pattern),
-        Pcre2Processor::compile_pattern(pattern)
+        Pcre2Processor::compile_pattern(pattern),
     ) {
         let chunk_size = 4096;
         let chunks: Vec<_> = large_data.chunks(chunk_size).collect();
 
-        println!("큰 데이터 ({} MB)를 {}바이트 청크로 나누어 처리:",
-                large_data.len() / (1024 * 1024), chunk_size);
+        println!(
+            "큰 데이터 ({} MB)를 {}바이트 청크로 나누어 처리:",
+            large_data.len() / (1024 * 1024),
+            chunk_size
+        );
 
         // Rust regex 청크 처리
         let rust_chunk_start = Instant::now();
@@ -112,12 +132,20 @@ fn main() {
         let pcre2_chunk_start = Instant::now();
         let mut pcre2_total_matches = 0;
         for chunk in &chunks {
-            pcre2_total_matches += Pcre2Processor::find_matches(&pcre2_regex, chunk).unwrap_or_default().len();
+            pcre2_total_matches += Pcre2Processor::find_matches(&pcre2_regex, chunk)
+                .unwrap_or_default()
+                .len();
         }
         let pcre2_chunk_time = pcre2_chunk_start.elapsed();
 
-        println!("🔍 Rust regex: {} 매치, {:?}", rust_total_matches, rust_chunk_time);
-        println!("🔧 PCRE2: {} 매치, {:?}", pcre2_total_matches, pcre2_chunk_time);
+        println!(
+            "🔍 Rust regex: {} 매치, {:?}",
+            rust_total_matches, rust_chunk_time
+        );
+        println!(
+            "🔧 PCRE2: {} 매치, {:?}",
+            pcre2_total_matches, pcre2_chunk_time
+        );
 
         if rust_chunk_time < pcre2_chunk_time {
             let speedup = pcre2_chunk_time.as_secs_f64() / rust_chunk_time.as_secs_f64();

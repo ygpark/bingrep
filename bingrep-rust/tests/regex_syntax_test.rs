@@ -2,7 +2,6 @@
 ///
 /// Rust의 regex 크레이트는 RE2 문법을 기반으로 하며,
 /// 모든 PCRE 기능을 지원하지는 않습니다.
-
 use regex::bytes::Regex;
 
 #[test]
@@ -29,14 +28,26 @@ fn test_rust_regex_quantifier_support() {
                 let test_data = b"XAAAAY"; // 4개의 연속된 A
                 let matches: Vec<_> = regex.find_iter(test_data).collect();
 
-                println!("  Pattern '{}' found {} matches in 'XAAAAY'", pattern, matches.len());
+                println!(
+                    "  Pattern '{}' found {} matches in 'XAAAAY'",
+                    pattern,
+                    matches.len()
+                );
                 for m in matches {
-                    println!("    Match at {}-{}: {:?}", m.start(), m.end(),
-                           &test_data[m.start()..m.end()]);
+                    println!(
+                        "    Match at {}-{}: {:?}",
+                        m.start(),
+                        m.end(),
+                        &test_data[m.start()..m.end()]
+                    );
                 }
             }
         } else {
-            assert!(result.is_err(), "Pattern '{}' should not be supported", pattern);
+            assert!(
+                result.is_err(),
+                "Pattern '{}' should not be supported",
+                pattern
+            );
         }
         println!();
     }
@@ -64,12 +75,21 @@ fn test_complex_quantifier_patterns() {
         println!("Found {} matches (expected {})", matches.len(), expected);
 
         for (i, m) in matches.iter().enumerate() {
-            println!("  Match {}: position {}-{}, data: {:?}",
-                   i+1, m.start(), m.end(), &test_data[m.start()..m.end()]);
+            println!(
+                "  Match {}: position {}-{}, data: {:?}",
+                i + 1,
+                m.start(),
+                m.end(),
+                &test_data[m.start()..m.end()]
+            );
         }
 
         // 일부 패턴은 예상과 다르게 작동할 수 있으므로 최소한의 매치는 있어야 함
-        assert!(matches.len() > 0, "Pattern '{}' should find at least one match", pattern);
+        assert!(
+            matches.len() > 0,
+            "Pattern '{}' should find at least one match",
+            pattern
+        );
         println!();
     }
 }
@@ -78,8 +98,8 @@ fn test_complex_quantifier_patterns() {
 fn test_hex_escape_in_quantifiers() {
     // 16진수 이스케이프와 수량자 조합 테스트
     let test_cases = vec![
-        (r"\\x00{4}", "Literal \\x00{4}"),  // 리터럴 백슬래시
-        (r"\x00{4}", "4 null bytes"),       // 실제 NULL 바이트 4개
+        (r"\\x00{4}", "Literal \\x00{4}"), // 리터럴 백슬래시
+        (r"\x00{4}", "4 null bytes"),      // 실제 NULL 바이트 4개
     ];
 
     for (pattern, description) in test_cases {
@@ -110,12 +130,12 @@ fn test_hex_escape_in_quantifiers() {
 #[test]
 fn test_quantifier_edge_cases() {
     let edge_cases = vec![
-        (r"\x00{0}", "Zero repetitions"),      // 0개 반복
-        (r"\x00{1}", "One repetition"),       // 1개 반복
-        (r"\x00{100}", "Many repetitions"),   // 많은 반복
-        (r"\x00{0,}", "Zero or more"),        // 0개 이상 (*와 동일)
-        (r"\x00{1,}", "One or more"),         // 1개 이상 (+와 동일)
-        (r"\x00{0,1}", "Zero or one"),        // 0개 또는 1개 (?와 동일)
+        (r"\x00{0}", "Zero repetitions"),   // 0개 반복
+        (r"\x00{1}", "One repetition"),     // 1개 반복
+        (r"\x00{100}", "Many repetitions"), // 많은 반복
+        (r"\x00{0,}", "Zero or more"),      // 0개 이상 (*와 동일)
+        (r"\x00{1,}", "One or more"),       // 1개 이상 (+와 동일)
+        (r"\x00{0,1}", "Zero or one"),      // 0개 또는 1개 (?와 동일)
     ];
 
     for (pattern, description) in edge_cases {
@@ -149,7 +169,10 @@ fn test_unsupported_regex_features() {
     ];
 
     for (pattern, description) in unsupported_patterns {
-        println!("Testing potentially unsupported: {} ({})", pattern, description);
+        println!(
+            "Testing potentially unsupported: {} ({})",
+            pattern, description
+        );
 
         match Regex::new(pattern) {
             Ok(_) => {

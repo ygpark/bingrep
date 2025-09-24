@@ -13,11 +13,17 @@ fn debug_quantifier_behavior() {
 
     println!("Found {} matches:", matches.len());
     for (i, m) in matches.iter().enumerate() {
-        println!("  Match {}: position {}-{}, data: {:?}",
-                i+1, m.start(), m.end(), &test_data[m.start()..m.end()]);
+        println!(
+            "  Match {}: position {}-{}, data: {:?}",
+            i + 1,
+            m.start(),
+            m.end(),
+            &test_data[m.start()..m.end()]
+        );
 
         // 16진수로 표시
-        let hex_string = test_data[m.start()..m.end()].iter()
+        let hex_string = test_data[m.start()..m.end()]
+            .iter()
             .map(|b| format!("{:02X}", b))
             .collect::<Vec<_>>()
             .join(" ");
@@ -45,10 +51,16 @@ fn test_different_data() {
 
     println!("Found {} matches:", matches.len());
     for (i, m) in matches.iter().enumerate() {
-        println!("  Match {}: position {}-{}, length: {}",
-                i+1, m.start(), m.end(), m.end() - m.start());
+        println!(
+            "  Match {}: position {}-{}, length: {}",
+            i + 1,
+            m.start(),
+            m.end(),
+            m.end() - m.start()
+        );
 
-        let hex_string = test_data[m.start()..m.end()].iter()
+        let hex_string = test_data[m.start()..m.end()]
+            .iter()
             .map(|b| format!("{:02X}", b))
             .collect::<Vec<_>>()
             .join(" ");
@@ -69,10 +81,16 @@ fn test_exact_quantifier() {
 
     println!("Found {} matches:", matches.len());
     for (i, m) in matches.iter().enumerate() {
-        println!("  Match {}: position {}-{}, length: {}",
-                i+1, m.start(), m.end(), m.end() - m.start());
+        println!(
+            "  Match {}: position {}-{}, length: {}",
+            i + 1,
+            m.start(),
+            m.end(),
+            m.end() - m.start()
+        );
 
-        let hex_string = test_data[m.start()..m.end()].iter()
+        let hex_string = test_data[m.start()..m.end()]
+            .iter()
             .map(|b| format!("{:02X}", b))
             .collect::<Vec<_>>()
             .join(" ");

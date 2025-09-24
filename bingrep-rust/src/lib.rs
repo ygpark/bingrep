@@ -28,15 +28,19 @@
 //! // Process file with regex...
 //! ```
 
+pub mod benchmark_utils;
+pub mod buffer_manager;
 pub mod cli;
 pub mod config;
-pub mod regex_processor;
-pub mod pcre2_processor;
-pub mod output;
-pub mod stream;
 pub mod error;
-pub mod buffer_manager;
-pub mod benchmark_utils;
+pub mod multifile;
+pub mod output;
+pub mod parallel;
+pub mod pcre2_processor;
+pub mod progress;
+pub mod regex_processor;
+pub mod stream;
+pub mod structured_output;
 
 pub use cli::Cli;
 pub use config::Config;
@@ -44,6 +48,6 @@ pub use error::{BingrepError, Result};
 pub use regex_processor::RegexProcessor;
 pub use stream::FileProcessor;
 
+pub use regex::bytes::Regex;
 /// Re-export commonly used types
 pub use std::io;
-pub use regex::bytes::Regex;

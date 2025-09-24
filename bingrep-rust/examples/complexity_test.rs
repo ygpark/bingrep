@@ -1,5 +1,5 @@
-use bingrep_rust::regex_processor::RegexProcessor;
 use bingrep_rust::pcre2_processor::Pcre2Processor;
+use bingrep_rust::regex_processor::RegexProcessor;
 use std::time::{Duration, Instant};
 
 fn main() {
@@ -55,11 +55,20 @@ fn main() {
 
                     // PCRE2 테스트
                     let pcre2_start = Instant::now();
-                    let pcre2_matches = Pcre2Processor::find_matches(&pcre2_regex, input.as_bytes());
+                    let pcre2_matches =
+                        Pcre2Processor::find_matches(&pcre2_regex, input.as_bytes());
                     let pcre2_duration = pcre2_start.elapsed();
 
-                    println!("      Rust regex: {:?} ({} matches)", rust_duration, rust_matches.len());
-                    println!("      PCRE2: {:?} ({} matches)", pcre2_duration, pcre2_matches.unwrap_or_default().len());
+                    println!(
+                        "      Rust regex: {:?} ({} matches)",
+                        rust_duration,
+                        rust_matches.len()
+                    );
+                    println!(
+                        "      PCRE2: {:?} ({} matches)",
+                        pcre2_duration,
+                        pcre2_matches.unwrap_or_default().len()
+                    );
 
                     // 시간 복잡도 경고
                     if rust_duration > Duration::from_millis(10) {
@@ -82,7 +91,7 @@ fn main() {
 
     if let (Ok(rust_regex), Ok(pcre2_regex)) = (
         RegexProcessor::compile_pattern(linear_pattern),
-        Pcre2Processor::compile_pattern(linear_pattern)
+        Pcre2Processor::compile_pattern(linear_pattern),
     ) {
         println!("패턴: {}", linear_pattern);
 
@@ -100,12 +109,18 @@ fn main() {
             let pcre2_duration = pcre2_start.elapsed();
 
             println!("  📊 크기 {}: ", size);
-            println!("    Rust regex: {:?} ({} matches, {:.2} ns/byte)",
-                    rust_duration, rust_matches.len(),
-                    rust_duration.as_nanos() as f64 / size as f64);
-            println!("    PCRE2: {:?} ({} matches, {:.2} ns/byte)",
-                    pcre2_duration, pcre2_matches.unwrap_or_default().len(),
-                    pcre2_duration.as_nanos() as f64 / size as f64);
+            println!(
+                "    Rust regex: {:?} ({} matches, {:.2} ns/byte)",
+                rust_duration,
+                rust_matches.len(),
+                rust_duration.as_nanos() as f64 / size as f64
+            );
+            println!(
+                "    PCRE2: {:?} ({} matches, {:.2} ns/byte)",
+                pcre2_duration,
+                pcre2_matches.unwrap_or_default().len(),
+                pcre2_duration.as_nanos() as f64 / size as f64
+            );
         }
     }
 
@@ -137,7 +152,7 @@ fn extreme_case_test() {
 
     if let (Ok(rust_regex), Ok(pcre2_regex)) = (
         RegexProcessor::compile_pattern(pattern),
-        Pcre2Processor::compile_pattern(pattern)
+        Pcre2Processor::compile_pattern(pattern),
     ) {
         let huge_data = generate_extreme_test_data(huge_size);
 
@@ -152,12 +167,18 @@ fn extreme_case_test() {
         let pcre2_duration = pcre2_start.elapsed();
 
         println!("  📈 결과:");
-        println!("    Rust regex: {:?} ({} matches, {:.2} MB/s)",
-                rust_duration, rust_matches.len(),
-                (huge_size as f64 / 1024.0 / 1024.0) / rust_duration.as_secs_f64());
-        println!("    PCRE2: {:?} ({} matches, {:.2} MB/s)",
-                pcre2_duration, pcre2_matches.unwrap_or_default().len(),
-                (huge_size as f64 / 1024.0 / 1024.0) / pcre2_duration.as_secs_f64());
+        println!(
+            "    Rust regex: {:?} ({} matches, {:.2} MB/s)",
+            rust_duration,
+            rust_matches.len(),
+            (huge_size as f64 / 1024.0 / 1024.0) / rust_duration.as_secs_f64()
+        );
+        println!(
+            "    PCRE2: {:?} ({} matches, {:.2} MB/s)",
+            pcre2_duration,
+            pcre2_matches.unwrap_or_default().len(),
+            (huge_size as f64 / 1024.0 / 1024.0) / pcre2_duration.as_secs_f64()
+        );
 
         // 선형성 확인
         let rust_ns_per_byte = rust_duration.as_nanos() as f64 / huge_size as f64;

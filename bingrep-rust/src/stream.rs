@@ -163,7 +163,12 @@ impl FileProcessor {
                     separator,
                 )?;
 
-                OutputFormatter::print_line(new_hit_pos, &hex_string, show_offset, hex_offset_length);
+                OutputFormatter::print_line(
+                    new_hit_pos,
+                    &hex_string,
+                    show_offset,
+                    hex_offset_length,
+                );
                 last_hit_pos = new_hit_pos as i64;
 
                 // Check line limit
@@ -206,15 +211,16 @@ impl FileProcessor {
             let extra_read = self.buffer_manager.read_into_extra(file, extra_needed)?;
 
             // Combine data using buffer manager
-            let combined_data = self.buffer_manager.combine_buffers(
-                match_start,
-                end_pos,
-                extra_read,
-            );
+            let combined_data =
+                self.buffer_manager
+                    .combine_buffers(match_start, end_pos, extra_read);
 
             file.seek(SeekFrom::Start(current_pos))?;
 
-            Ok(OutputFormatter::format_bytes_as_hex(combined_data, separator))
+            Ok(OutputFormatter::format_bytes_as_hex(
+                combined_data,
+                separator,
+            ))
         } else {
             let main_slice = self.buffer_manager.get_main_slice(match_start, end_pos);
             Ok(OutputFormatter::format_bytes_as_hex(main_slice, separator))

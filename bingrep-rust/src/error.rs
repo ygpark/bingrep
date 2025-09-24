@@ -7,6 +7,8 @@ pub enum BingrepError {
     InvalidPattern(String),
     InvalidWidth(usize),
     RegexCompilation(String),
+    GlobPattern(String),
+    GlobPath(String),
 }
 
 impl fmt::Display for BingrepError {
@@ -16,10 +18,17 @@ impl fmt::Display for BingrepError {
             BingrepError::InvalidPattern(msg) => write!(f, "Invalid pattern: {}", msg),
             BingrepError::InvalidWidth(width) => {
                 let config = crate::Config::default();
-                write!(f, "Invalid width {}: must be between {} and {}",
-                    width, config.get_min_width(), config.get_max_width())
+                write!(
+                    f,
+                    "Invalid width {}: must be between {} and {}",
+                    width,
+                    config.get_min_width(),
+                    config.get_max_width()
+                )
             }
             BingrepError::RegexCompilation(msg) => write!(f, "Regex compilation error: {}", msg),
+            BingrepError::GlobPattern(msg) => write!(f, "Glob pattern error: {}", msg),
+            BingrepError::GlobPath(msg) => write!(f, "Glob path error: {}", msg),
         }
     }
 }
@@ -42,6 +51,18 @@ impl From<io::Error> for BingrepError {
 impl From<regex::Error> for BingrepError {
     fn from(err: regex::Error) -> Self {
         BingrepError::RegexCompilation(err.to_string())
+    }
+}
+
+impl From<glob::PatternError> for BingrepError {
+    fn from(err: glob::PatternError) -> Self {
+        BingrepError::GlobPattern(err.to_string())
+    }
+}
+
+impl From<glob::GlobError> for BingrepError {
+    fn from(err: glob::GlobError) -> Self {
+        BingrepError::GlobPath(err.to_string())
     }
 }
 

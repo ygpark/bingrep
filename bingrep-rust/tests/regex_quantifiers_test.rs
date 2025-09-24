@@ -13,7 +13,10 @@ fn get_binary_path() -> PathBuf {
 
 fn create_test_file(content: &[u8]) -> PathBuf {
     let temp_dir = std::env::temp_dir();
-    let file_path = temp_dir.join(format!("regex_quantifier_test_{}.bin", uuid::Uuid::new_v4()));
+    let file_path = temp_dir.join(format!(
+        "regex_quantifier_test_{}.bin",
+        uuid::Uuid::new_v4()
+    ));
     let mut file = File::create(&file_path).unwrap();
     file.write_all(content).unwrap();
     file_path
@@ -383,8 +386,10 @@ fn test_quantifier_error_handling() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         let stdout = String::from_utf8_lossy(&output.stdout);
 
-        println!("Pattern '{}' ({}): stderr='{}', stdout='{}'",
-                 pattern, description, stderr, stdout);
+        println!(
+            "Pattern '{}' ({}): stderr='{}', stdout='{}'",
+            pattern, description, stderr, stdout
+        );
 
         // 정규표현식 오류가 발생하거나 출력이 없어야 함
         if stderr.contains("정규표현식 오류") || stdout.trim().is_empty() {
@@ -396,7 +401,10 @@ fn test_quantifier_error_handling() {
     }
 
     // 모든 패턴이 오류 처리되거나, 최소한 일부는 처리되어야 함
-    assert!(error_count >= 2, "At least half of invalid patterns should be caught");
+    assert!(
+        error_count >= 2,
+        "At least half of invalid patterns should be caught"
+    );
 
     // 정리
     fs::remove_file(test_file).ok();

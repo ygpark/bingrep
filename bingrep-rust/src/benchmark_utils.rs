@@ -1,5 +1,5 @@
-use std::time::{Duration, Instant};
 use std::collections::HashMap;
+use std::time::{Duration, Instant};
 
 /// Performance measurement utilities for regex engine comparison
 pub struct BenchmarkUtils;
@@ -31,12 +31,12 @@ impl BenchmarkUtils {
     /// Generate realistic binary file data
     pub fn generate_binary_file_data(size: usize) -> Vec<u8> {
         let headers = [
-            b"\x4D\x5A".as_slice(), // PE
-            b"\x7F\x45\x4C\x46".as_slice(), // ELF
+            b"\x4D\x5A".as_slice(),                         // PE
+            b"\x7F\x45\x4C\x46".as_slice(),                 // ELF
             b"\x89\x50\x4E\x47\x0D\x0A\x1A\x0A".as_slice(), // PNG
-            b"\xFF\xD8\xFF\xE0".as_slice(), // JPEG
-            b"\x00\x00\x00\x01\x67".as_slice(), // H.264 SPS
-            b"\x00\x00\x00\x01\x68".as_slice(), // H.264 PPS
+            b"\xFF\xD8\xFF\xE0".as_slice(),                 // JPEG
+            b"\x00\x00\x00\x01\x67".as_slice(),             // H.264 SPS
+            b"\x00\x00\x00\x01\x68".as_slice(),             // H.264 PPS
         ];
 
         Self::generate_test_data(size, &headers, 0.001) // 0.1% header density
@@ -149,7 +149,8 @@ impl BenchmarkStatistics {
         let total_duration: Duration = durations.iter().sum();
         let avg_duration = total_duration / iterations as u32;
 
-        let throughput_mb_per_sec = (data_size as f64) / (1024.0 * 1024.0) / avg_duration.as_secs_f64();
+        let throughput_mb_per_sec =
+            (data_size as f64) / (1024.0 * 1024.0) / avg_duration.as_secs_f64();
 
         Self {
             min_duration,
@@ -164,7 +165,11 @@ impl BenchmarkStatistics {
 
     pub fn print_summary(&self, name: &str) {
         println!("\n{} Performance Summary:", name);
-        println!("  Data size: {} bytes ({:.2} MB)", self.data_size, self.data_size as f64 / (1024.0 * 1024.0));
+        println!(
+            "  Data size: {} bytes ({:.2} MB)",
+            self.data_size,
+            self.data_size as f64 / (1024.0 * 1024.0)
+        );
         println!("  Iterations: {}", self.iterations);
         println!("  Min time: {:?}", self.min_duration);
         println!("  Max time: {:?}", self.max_duration);
@@ -188,15 +193,28 @@ impl EngineComparison {
         self.engine2_stats.print_summary(&self.engine2_name);
 
         println!("\n=== Comparison ===");
-        let speedup = self.engine2_stats.avg_duration.as_secs_f64() / self.engine1_stats.avg_duration.as_secs_f64();
+        let speedup = self.engine2_stats.avg_duration.as_secs_f64()
+            / self.engine1_stats.avg_duration.as_secs_f64();
         if speedup > 1.0 {
-            println!("{} is {:.2}x faster than {}", self.engine1_name, speedup, self.engine2_name);
+            println!(
+                "{} is {:.2}x faster than {}",
+                self.engine1_name, speedup, self.engine2_name
+            );
         } else {
-            println!("{} is {:.2}x faster than {}", self.engine2_name, 1.0 / speedup, self.engine1_name);
+            println!(
+                "{} is {:.2}x faster than {}",
+                self.engine2_name,
+                1.0 / speedup,
+                self.engine1_name
+            );
         }
 
-        let throughput_ratio = self.engine1_stats.throughput_mb_per_sec / self.engine2_stats.throughput_mb_per_sec;
-        println!("Throughput ratio ({}/{}): {:.2}", self.engine1_name, self.engine2_name, throughput_ratio);
+        let throughput_ratio =
+            self.engine1_stats.throughput_mb_per_sec / self.engine2_stats.throughput_mb_per_sec;
+        println!(
+            "Throughput ratio ({}/{}): {:.2}",
+            self.engine1_name, self.engine2_name, throughput_ratio
+        );
     }
 }
 

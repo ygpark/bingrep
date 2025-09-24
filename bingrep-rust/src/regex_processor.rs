@@ -64,20 +64,22 @@ impl RegexProcessor {
                                 match u8::from_str_radix(&hex_str, 16) {
                                     Ok(byte) => result.push(byte),
                                     Err(_) => {
-                                        return Err(BingrepError::InvalidPattern(
-                                            format!("Invalid hex sequence: \\x{}", hex_str)
-                                        ));
+                                        return Err(BingrepError::InvalidPattern(format!(
+                                            "Invalid hex sequence: \\x{}",
+                                            hex_str
+                                        )));
                                     }
                                 }
                             }
                             (Some(h1), None) => {
-                                return Err(BingrepError::InvalidPattern(
-                                    format!("Incomplete hex sequence: \\x{}", h1)
-                                ));
+                                return Err(BingrepError::InvalidPattern(format!(
+                                    "Incomplete hex sequence: \\x{}",
+                                    h1
+                                )));
                             }
                             (None, _) => {
                                 return Err(BingrepError::InvalidPattern(
-                                    "Incomplete hex sequence: \\x".to_string()
+                                    "Incomplete hex sequence: \\x".to_string(),
                                 ));
                             }
                         }
@@ -143,20 +145,22 @@ impl RegexProcessor {
                                         result.push_str(&format!("\\x{:02x}", byte));
                                     }
                                     Err(_) => {
-                                        return Err(BingrepError::InvalidPattern(
-                                            format!("Invalid hex sequence in regex pattern: \\x{}", hex_str)
-                                        ));
+                                        return Err(BingrepError::InvalidPattern(format!(
+                                            "Invalid hex sequence in regex pattern: \\x{}",
+                                            hex_str
+                                        )));
                                     }
                                 }
                             }
                             (Some(h1), None) => {
-                                return Err(BingrepError::InvalidPattern(
-                                    format!("Incomplete hex sequence in regex pattern: \\x{}", h1)
-                                ));
+                                return Err(BingrepError::InvalidPattern(format!(
+                                    "Incomplete hex sequence in regex pattern: \\x{}",
+                                    h1
+                                )));
                             }
                             (None, _) => {
                                 return Err(BingrepError::InvalidPattern(
-                                    "Incomplete hex sequence in regex pattern: \\x".to_string()
+                                    "Incomplete hex sequence in regex pattern: \\x".to_string(),
                                 ));
                             }
                         }

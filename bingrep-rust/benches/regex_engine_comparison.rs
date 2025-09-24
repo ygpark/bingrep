@@ -1,7 +1,7 @@
+use bingrep_rust::pcre2_processor::Pcre2Processor;
+use bingrep_rust::regex_processor::RegexProcessor;
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use std::time::Duration;
-use bingrep_rust::regex_processor::RegexProcessor;
-use bingrep_rust::pcre2_processor::Pcre2Processor;
 
 // Test data generators
 fn generate_test_data(size: usize, pattern_density: f32) -> Vec<u8> {
@@ -25,10 +25,10 @@ fn generate_test_data(size: usize, pattern_density: f32) -> Vec<u8> {
 fn generate_large_binary_data(size: usize) -> Vec<u8> {
     let mut data = Vec::with_capacity(size);
     let patterns = [
-        b"\x4D\x5A".as_slice(), // PE header
+        b"\x4D\x5A".as_slice(),         // PE header
         b"\x7F\x45\x4C\x46".as_slice(), // ELF header
         b"\x89\x50\x4E\x47".as_slice(), // PNG signature
-        b"\xFF\xD8\xFF".as_slice(), // JPEG signature
+        b"\xFF\xD8\xFF".as_slice(),     // JPEG signature
     ];
 
     for i in 0..size {
@@ -82,9 +82,9 @@ fn bench_simple_pattern(c: &mut Criterion) {
 fn bench_quantifier_patterns(c: &mut Criterion) {
     let data_sizes = [8192, 32768, 131072];
     let patterns = [
-        ("simple_quantifier", "\\x00{4}"), // Exactly 4 zeros
+        ("simple_quantifier", "\\x00{4}"),  // Exactly 4 zeros
         ("range_quantifier", "\\x00{2,6}"), // 2-6 zeros
-        ("plus_quantifier", "\\xFF+"), // One or more 0xFF
+        ("plus_quantifier", "\\xFF+"),      // One or more 0xFF
         ("star_quantifier", "\\x20*\\x0A"), // Zero or more spaces before newline
     ];
 
@@ -126,8 +126,8 @@ fn bench_worst_case_patterns(c: &mut Criterion) {
     let data = generate_test_data(size, 0.1); // 10% pattern density (high match rate)
 
     let patterns = [
-        ("high_frequency", "\\x00"), // Very common byte
-        ("alternation", "\\x00|\\x01|\\xFF"), // Multiple alternatives
+        ("high_frequency", "\\x00"),                     // Very common byte
+        ("alternation", "\\x00|\\x01|\\xFF"),            // Multiple alternatives
         ("complex_hex", "\\x00\\x00\\x01[\\x67-\\x6F]"), // Complex pattern with character class
     ];
 
@@ -209,17 +209,21 @@ fn bench_memory_usage(c: &mut Criterion) {
         group.throughput(Throughput::Bytes(size as u64));
 
         // Measure memory-efficient processing
-        group.bench_with_input(BenchmarkId::new("rust_regex_chunked", size), &data, |b, data| {
-            let chunk_size = 4096;
-            b.iter(|| {
-                let mut total_matches = 0;
-                for chunk in data.chunks(chunk_size) {
-                    let matches: Vec<_> = rust_regex.find_iter(black_box(chunk)).collect();
-                    total_matches += matches.len();
-                }
-                black_box(total_matches);
-            });
-        });
+        group.bench_with_input(
+            BenchmarkId::new("rust_regex_chunked", size),
+            &data,
+            |b, data| {
+                let chunk_size = 4096;
+                b.iter(|| {
+                    let mut total_matches = 0;
+                    for chunk in data.chunks(chunk_size) {
+                        let matches: Vec<_> = rust_regex.find_iter(black_box(chunk)).collect();
+                        total_matches += matches.len();
+                    }
+                    black_box(total_matches);
+                });
+            },
+        );
 
         group.bench_with_input(BenchmarkId::new("pcre2_chunked", size), &data, |b, data| {
             let chunk_size = 4096;

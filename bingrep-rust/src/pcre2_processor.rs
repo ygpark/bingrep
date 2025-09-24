@@ -20,8 +20,7 @@ impl Pcre2Processor {
             Self::convert_hex_escapes_in_pattern(expression)?
         };
 
-        Pcre2Regex::new(&pattern)
-            .map_err(|err| BingrepError::RegexCompilation(err.to_string()))
+        Pcre2Regex::new(&pattern).map_err(|err| BingrepError::RegexCompilation(err.to_string()))
     }
 
     /// Parse \xHH sequences into bytes
@@ -45,20 +44,22 @@ impl Pcre2Processor {
                                 match u8::from_str_radix(&hex_str, 16) {
                                     Ok(byte) => result.push(byte),
                                     Err(_) => {
-                                        return Err(BingrepError::InvalidPattern(
-                                            format!("Invalid hex sequence: \\x{}", hex_str)
-                                        ));
+                                        return Err(BingrepError::InvalidPattern(format!(
+                                            "Invalid hex sequence: \\x{}",
+                                            hex_str
+                                        )));
                                     }
                                 }
                             }
                             (Some(h1), None) => {
-                                return Err(BingrepError::InvalidPattern(
-                                    format!("Incomplete hex sequence: \\x{}", h1)
-                                ));
+                                return Err(BingrepError::InvalidPattern(format!(
+                                    "Incomplete hex sequence: \\x{}",
+                                    h1
+                                )));
                             }
                             (None, _) => {
                                 return Err(BingrepError::InvalidPattern(
-                                    "Incomplete hex sequence: \\x".to_string()
+                                    "Incomplete hex sequence: \\x".to_string(),
                                 ));
                             }
                         }
@@ -116,20 +117,22 @@ impl Pcre2Processor {
                                         result.push_str(&format!("\\x{:02x}", byte));
                                     }
                                     Err(_) => {
-                                        return Err(BingrepError::InvalidPattern(
-                                            format!("Invalid hex sequence in regex pattern: \\x{}", hex_str)
-                                        ));
+                                        return Err(BingrepError::InvalidPattern(format!(
+                                            "Invalid hex sequence in regex pattern: \\x{}",
+                                            hex_str
+                                        )));
                                     }
                                 }
                             }
                             (Some(h1), None) => {
-                                return Err(BingrepError::InvalidPattern(
-                                    format!("Incomplete hex sequence in regex pattern: \\x{}", h1)
-                                ));
+                                return Err(BingrepError::InvalidPattern(format!(
+                                    "Incomplete hex sequence in regex pattern: \\x{}",
+                                    h1
+                                )));
                             }
                             (None, _) => {
                                 return Err(BingrepError::InvalidPattern(
-                                    "Incomplete hex sequence in regex pattern: \\x".to_string()
+                                    "Incomplete hex sequence in regex pattern: \\x".to_string(),
                                 ));
                             }
                         }
@@ -154,9 +157,12 @@ impl Pcre2Processor {
         for mat in regex.find_iter(data) {
             match mat {
                 Ok(m) => matches.push((m.start(), m.end())),
-                Err(err) => return Err(BingrepError::RegexCompilation(
-                    format!("PCRE2 match error: {}", err)
-                )),
+                Err(err) => {
+                    return Err(BingrepError::RegexCompilation(format!(
+                        "PCRE2 match error: {}",
+                        err
+                    )))
+                }
             }
         }
 

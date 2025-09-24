@@ -13,7 +13,8 @@ impl TestDataGenerator {
         let mut file = File::create(&file_path).unwrap();
 
         // 일반 데이터
-        file.write_all(b"Some random data before signature...").unwrap();
+        file.write_all(b"Some random data before signature...")
+            .unwrap();
 
         // H.264 NAL Unit 시그니처 예제
         file.write_all(b"\x00\x00\x00\x01\x67").unwrap(); // SPS
@@ -75,16 +76,19 @@ impl TestDataGenerator {
         file.write_all(b"ASCII Text: Hello World!\n").unwrap();
 
         // UTF-8 한글
-        file.write_all("한글 텍스트: 안녕하세요\n".as_bytes()).unwrap();
+        file.write_all("한글 텍스트: 안녕하세요\n".as_bytes())
+            .unwrap();
 
         // 바이너리 데이터
-        file.write_all(&[0x00, 0x01, 0x02, 0x03, 0xFF, 0xFE, 0xFD]).unwrap();
+        file.write_all(&[0x00, 0x01, 0x02, 0x03, 0xFF, 0xFE, 0xFD])
+            .unwrap();
 
         // UTF-8 이모지
         file.write_all("이모지: 😀 🎉 🚀\n".as_bytes()).unwrap();
 
         // NULL 바이트가 포함된 데이터
-        file.write_all(b"\x00\x00NULL\x00\x00BYTES\x00\x00").unwrap();
+        file.write_all(b"\x00\x00NULL\x00\x00BYTES\x00\x00")
+            .unwrap();
 
         file_path
     }
@@ -187,7 +191,8 @@ mod tests {
 
         let content = fs::read(&file_path).unwrap();
         // 반복 패턴 확인
-        let pattern_count = content.windows(4)
+        let pattern_count = content
+            .windows(4)
             .filter(|w| *w == b"\x12\x34\x56\x78")
             .count();
         assert_eq!(pattern_count, 100);

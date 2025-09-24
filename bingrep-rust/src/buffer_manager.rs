@@ -72,8 +72,10 @@ impl BufferManager {
         extra_size: usize,
     ) -> &[u8] {
         self.temp_buffer.clear();
-        self.temp_buffer.extend_from_slice(&self.main_buffer[main_start..main_end]);
-        self.temp_buffer.extend_from_slice(&self.extra_buffer[..extra_size]);
+        self.temp_buffer
+            .extend_from_slice(&self.main_buffer[main_start..main_end]);
+        self.temp_buffer
+            .extend_from_slice(&self.extra_buffer[..extra_size]);
         &self.temp_buffer
     }
 
