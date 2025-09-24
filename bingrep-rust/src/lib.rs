@@ -10,7 +10,6 @@
 //! * `cli` - Command-line interface handling
 //! * `config` - Configuration and validation
 //! * `regex_processor` - Regular expression compilation and processing
-//! * `pcre2_processor` - Alternative PCRE2 regex engine support
 //! * `stream` - File streaming and pattern matching
 //! * `buffer_manager` - Efficient buffer management for large files
 //! * `output` - Hexadecimal output formatting
@@ -28,15 +27,15 @@
 //! // Process file with regex...
 //! ```
 
-pub mod benchmark_utils;
 pub mod buffer_manager;
 pub mod cli;
+pub mod color_context;
 pub mod config;
 pub mod error;
+pub mod forensic_image;
 pub mod multifile;
 pub mod output;
 pub mod parallel;
-pub mod pcre2_processor;
 pub mod progress;
 pub mod regex_processor;
 pub mod stream;

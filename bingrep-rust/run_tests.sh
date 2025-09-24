@@ -55,10 +55,6 @@ fi
 echo
 echo "=== 모든 테스트 통과! ==="
 
-echo
-echo "선택적 벤치마크 테스트 실행 방법:"
-echo "cargo test --test benchmark_test -- --ignored"
-echo
 
 echo "테스트 커버리지 확인 방법:"
 echo "cargo install cargo-tarpaulin"

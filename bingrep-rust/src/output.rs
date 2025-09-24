@@ -1,4 +1,8 @@
 /// Utilities for formatting binary data as hexadecimal output
+use colored::*;
+use crate::cli::ColorChoice;
+use std::io::IsTerminal;
+
 pub struct OutputFormatter;
 
 impl OutputFormatter {
@@ -23,15 +27,121 @@ impl OutputFormatter {
 
     /// Print a line with optional offset
     pub fn print_line(offset: u64, hex_data: &str, show_offset: bool, hex_offset_length: usize) {
+        Self::print_line_with_color(
+            offset,
+            hex_data,
+            show_offset,
+            hex_offset_length,
+            crate::color_context::get_color_choice(),
+        )
+    }
+
+    /// Print a line with optional offset and color support, with match highlighting
+    pub fn print_line_with_match_highlight(
+        offset: u64,
+        hex_data: &str,
+        show_offset: bool,
+        hex_offset_length: usize,
+        color_choice: &ColorChoice,
+        match_start: Option<usize>,
+        match_length: Option<usize>,
+    ) {
+        let should_use_color = match color_choice {
+            ColorChoice::Always => true,
+            ColorChoice::Never => false,
+            ColorChoice::Auto => std::io::stdout().is_terminal(),
+        };
+
         if show_offset {
-            println!(
-                "{} : {}",
-                Self::format_offset(offset, hex_offset_length),
-                hex_data
-            );
+            let offset_str = Self::format_offset(offset, hex_offset_length);
+
+            if should_use_color {
+                println!(
+                    "{} : {}",
+                    offset_str.cyan().bold(),
+                    Self::colorize_hex_data_with_match(hex_data, match_start, match_length)
+                );
+            } else {
+                println!("{} : {}", offset_str, hex_data);
+            }
         } else {
-            println!("{}", hex_data);
+            if should_use_color {
+                println!("{}", Self::colorize_hex_data_with_match(hex_data, match_start, match_length));
+            } else {
+                println!("{}", hex_data);
+            }
         }
+    }
+
+    /// Print a line with optional offset and color support
+    pub fn print_line_with_color(
+        offset: u64,
+        hex_data: &str,
+        show_offset: bool,
+        hex_offset_length: usize,
+        color_choice: &ColorChoice
+    ) {
+        Self::print_line_with_match_highlight(
+            offset,
+            hex_data,
+            show_offset,
+            hex_offset_length,
+            color_choice,
+            None,
+            None,
+        );
+    }
+
+    /// Apply colors to hex data with match highlighting
+    fn colorize_hex_data_with_match(
+        hex_data: &str,
+        match_start: Option<usize>,
+        match_length: Option<usize>,
+    ) -> String {
+        let bytes: Vec<&str> = hex_data.split_whitespace().collect();
+
+        bytes
+            .iter()
+            .enumerate()
+            .map(|(i, byte)| {
+                // Check if this byte is part of a match
+                let is_match = if let (Some(start), Some(len)) = (match_start, match_length) {
+                    i >= start && i < start + len
+                } else {
+                    false
+                };
+
+                if is_match {
+                    // Highlight matches with dark red color
+                    byte.red().bold().to_string()
+                } else {
+                    // No color for non-matched bytes
+                    byte.to_string()
+                }
+            })
+            .collect::<Vec<_>>()
+            .join(" ")
+    }
+
+    /// Apply colors to hex data
+    #[allow(dead_code)]
+    fn colorize_hex_data(hex_data: &str) -> String {
+        hex_data
+            .split_whitespace()
+            .map(|byte| {
+                match u8::from_str_radix(byte, 16) {
+                    Ok(b) => match b {
+                        0x00 => byte.bright_black().to_string(),                    // NULL bytes - dark gray
+                        0x20..=0x7E => byte.green().to_string(),                    // Printable ASCII - green
+                        0xFF => byte.bright_red().bold().to_string(),               // 0xFF - bright red
+                        0x01..=0x1F | 0x7F..=0x9F => byte.yellow().to_string(),    // Control characters - yellow
+                        _ => byte.blue().to_string(),                               // Other bytes - blue
+                    },
+                    Err(_) => byte.to_string(), // Fallback for non-hex data
+                }
+            })
+            .collect::<Vec<_>>()
+            .join(" ")
     }
 
     /// Format a line with offset (returns a string instead of printing)

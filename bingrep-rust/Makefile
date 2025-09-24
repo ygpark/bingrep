@@ -1,7 +1,7 @@
 # Makefile for bingrep-rust
 # 전통적인 make 명령어 지원
 
-.PHONY: all build build-release test test-all bench bench-quick bench-complexity bench-full clean check fmt clippy dev-test pre-commit ci help
+.PHONY: all build build-release test test-all clean check fmt clippy dev-test pre-commit ci help
 
 # 기본 타겟
 all: build test
@@ -25,21 +25,10 @@ test-all:
 	cargo test
 	cargo test -- --ignored
 
-# 벤치마크 관련
-bench-quick:
-	@echo "⚡ 빠른 성능 벤치마크 실행 중..."
-	cargo run --example quick_benchmark --release
-
-bench-complexity:
-	@echo "🔍 시간 복잡도 테스트 실행 중..."
-	cargo run --example complexity_test --release
-
-bench-full:
-	@echo "📊 전체 벤치마크 실행 중 (시간이 오래 걸립니다)..."
-	cargo bench
-
-bench: bench-quick bench-complexity
-	@echo "✅ 모든 성능 테스트 완료!"
+# 테스트 관련 (이어서)
+test-ignored:
+	@echo "🧪 무시된 테스트 실행 중..."
+	cargo test -- --ignored
 
 # 개발 도구
 clean:
@@ -65,7 +54,7 @@ dev-test: test clippy
 pre-commit: fmt clippy test
 	@echo "✅ 커밋 전 검사 완료!"
 
-ci: clean build test-all bench-quick
+ci: clean build test-all
 	@echo "✅ CI 파이프라인 완료!"
 
 # 도움말
@@ -79,12 +68,6 @@ help:
 	@echo "🧪 테스트:"
 	@echo "  make test          - 기본 테스트"
 	@echo "  make test-all      - 모든 테스트 (무시된 것 포함)"
-	@echo ""
-	@echo "⚡ 벤치마크:"
-	@echo "  make bench-quick   - 빠른 성능 테스트 (추천)"
-	@echo "  make bench-complexity - 시간 복잡도 테스트"
-	@echo "  make bench-full    - 전체 정밀 벤치마크"
-	@echo "  make bench         - 빠른 벤치마크들 실행"
 	@echo ""
 	@echo "🛠  개발:"
 	@echo "  make clean         - 빌드 정리"

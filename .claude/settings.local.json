@@ -14,7 +14,8 @@
       "Bash(go run:*)",
       "Bash(/Users/ghostyak/Documents/github/bingrep/bingrep-rust/target/debug/bingrep-rust \"/tmp/test*.bin\" -e \"\\x01\\x02\\x03\\x04\" --multi)",
       "Bash(/Users/ghostyak/Documents/github/bingrep/bingrep-rust/target/debug/bingrep-rust -)",
-      "Bash(/Users/ghostyak/Documents/github/bingrep/bingrep-rust/target/debug/bingrep-rust - -e \"\\x00\\x01\\x02\")"
+      "Bash(/Users/ghostyak/Documents/github/bingrep/bingrep-rust/target/debug/bingrep-rust - -e \"\\x00\\x01\\x02\")",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

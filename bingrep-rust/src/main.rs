@@ -13,6 +13,9 @@ use std::io::{self, Read, Seek, SeekFrom};
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
+    // Set global color choice
+    bingrep_rust::color_context::set_color_choice(cli.color.clone());
+
     // Check file path or stdin
     let file_path = match &cli.file_path {
         Some(path) => {
@@ -52,40 +55,32 @@ fn main() -> Result<()> {
         );
     }
 
-    // Open file
-    let mut file = File::open(&file_path)?;
-    let file_size = file.metadata()?.len();
-
     // Create configuration and validate CLI parameters
     let config = Config::default();
     config.validate_cli(&cli)?;
 
     let mut processor = FileProcessor::new(config);
 
-    // Seek to starting position
-    file.seek(SeekFrom::Start(cli.position))?;
+    // Check if this is a forensic image file (E01, VMDK) and handle accordingly
+    if bingrep_rust::forensic_image::is_forensic_image(&file_path) {
+        // Process forensic image file - parallel processing not supported for forensic images yet
+        let format_name = bingrep_rust::forensic_image::get_format_name(&file_path)
+            .unwrap_or("Unknown");
+        eprintln!("Detected {} forensic image: {}", format_name, file_path);
 
-    // Process file with or without regex
-    if let Some(expression) = cli.expression {
-        let regex = RegexProcessor::compile_pattern(&expression)?;
-
-        if cli.parallel && file_size > cli.chunk_size as u64 {
-            // Use parallel processing for large files
-            ParallelProcessor::process_file_parallel(
-                &mut file,
+        if let Some(expression) = cli.expression {
+            let regex = RegexProcessor::compile_pattern(&expression)?;
+            processor.process_stream_by_regex_from_path(
+                &file_path,
                 &regex,
-                cli.chunk_size,
                 cli.line_width,
                 cli.limit,
                 &cli.separator,
                 !cli.hide_offset,
-                file_size,
             )?;
         } else {
-            // Use regular processing
-            processor.process_stream_by_regex(
-                &mut file,
-                &regex,
+            processor.process_file_stream_from_path(
+                &file_path,
                 cli.line_width,
                 cli.limit,
                 &cli.separator,
@@ -93,27 +88,63 @@ fn main() -> Result<()> {
             )?;
         }
     } else {
-        if cli.parallel && file_size > cli.chunk_size as u64 {
-            // Use parallel processing for hex dump
-            ParallelHexDump::process_file_parallel(
-                &mut file,
-                cli.chunk_size,
-                cli.line_width,
-                cli.limit,
-                &cli.separator,
-                !cli.hide_offset,
-                file_size,
-            )?;
+        // Open regular file
+        let mut file = File::open(&file_path)?;
+        let file_size = file.metadata()?.len();
+
+        // Seek to starting position
+        file.seek(SeekFrom::Start(cli.position))?;
+
+        // Process file with or without regex
+        if let Some(expression) = cli.expression {
+            let regex = RegexProcessor::compile_pattern(&expression)?;
+
+            if cli.parallel && file_size > cli.chunk_size as u64 {
+                // Use parallel processing for large files
+                ParallelProcessor::process_file_parallel(
+                    &mut file,
+                    &regex,
+                    cli.chunk_size,
+                    cli.line_width,
+                    cli.limit,
+                    &cli.separator,
+                    !cli.hide_offset,
+                    file_size,
+                )?;
+            } else {
+                // Use regular processing
+                processor.process_stream_by_regex(
+                    &mut file,
+                    &regex,
+                    cli.line_width,
+                    cli.limit,
+                    &cli.separator,
+                    !cli.hide_offset,
+                )?;
+            }
         } else {
-            // Use regular processing
-            processor.process_file_stream(
-                &mut file,
-                cli.line_width,
-                cli.limit,
-                &cli.separator,
-                !cli.hide_offset,
-                file_size,
-            )?;
+            if cli.parallel && file_size > cli.chunk_size as u64 {
+                // Use parallel processing for hex dump
+                ParallelHexDump::process_file_parallel(
+                    &mut file,
+                    cli.chunk_size,
+                    cli.line_width,
+                    cli.limit,
+                    &cli.separator,
+                    !cli.hide_offset,
+                    file_size,
+                )?;
+            } else {
+                // Use regular processing
+                processor.process_file_stream(
+                    &mut file,
+                    cli.line_width,
+                    cli.limit,
+                    &cli.separator,
+                    !cli.hide_offset,
+                    file_size,
+                )?;
+            }
         }
     }
 

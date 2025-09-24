@@ -123,16 +123,6 @@ cargo test --test regex_quantifiers_test # 정규표현식 수량자 테스트
 cargo test --test regex_syntax_test  # 정규표현식 문법 지원 테스트
 ```
 
-### 벤치마크 테스트
-```bash
-# 성능 벤치마크 실행 (대용량 파일 사용)
-cargo test --test benchmark_test -- --ignored
-
-# 개별 벤치마크
-cargo test benchmark_large_file_hex_display -- --ignored
-cargo test benchmark_large_file_regex_search -- --ignored
-cargo test benchmark_memory_usage -- --ignored
-```
 
 ### 테스트 커버리지
 ```bash

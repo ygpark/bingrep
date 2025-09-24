@@ -30,12 +30,11 @@ pids
 *.bak
 *.orig
 
-# Test and benchmark data
+# Test data
 test_data/
 *.test
 test_*.bin
-criterion/
-bench_results/
+*.bin
 
 # Documentation and coverage
 /doc/

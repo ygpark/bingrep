@@ -1,4 +1,4 @@
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 
 #[derive(Parser)]
 #[command(name = "bingrep")]
@@ -65,4 +65,18 @@ pub struct Cli {
     /// 진행률 표시 (대용량 파일 처리 시)
     #[arg(long = "progress")]
     pub show_progress: bool,
+
+    /// 색상 출력 설정 (always, never, auto)
+    #[arg(long = "color", default_value = "auto")]
+    pub color: ColorChoice,
+}
+
+#[derive(Debug, Clone, ValueEnum)]
+pub enum ColorChoice {
+    /// 항상 색상 출력
+    Always,
+    /// 색상 출력 안함
+    Never,
+    /// 터미널일 때만 색상 출력
+    Auto,
 }
